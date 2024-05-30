@@ -47,7 +47,7 @@
             </el-table-column> -->
           </el-table>
           <div class="text-center">
-              <el-pagination background  layout="prev, pager, next" :total="4" @size-change="sizeChange"/>
+              <el-pagination background  layout="prev, pager, next" :total="total" @current-change="currentChange"/>
           </div>
         </div>
         <div class="right">
@@ -139,8 +139,9 @@ const switchTab = (index) => {
   currentIndex.value = index
 }
 
-const sizeChange = (v) => {
+const currentChange = (v) => {
   currentPage.value = v
+  getMatchLog()
 }
 // 获取比赛记录
 const getMatchLog = () => {
@@ -150,7 +151,7 @@ const getMatchLog = () => {
     limit: pageSize.value
  }).then(res => {
    table.value = res.data.result.data
-   total.value = res.data.count
+   total.value = res.data.result.count
 
    table.value.map(item => {
     heroInfo.map(jtem => {
