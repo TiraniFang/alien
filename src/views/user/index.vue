@@ -99,7 +99,7 @@ const championByIdCache = ref({})
 const championJson = ref({})
 const infos = ref(false)
 const total = ref(0)
-const pageSize = ref(8)
+const pageSize = ref(7)
 const currentPage = ref(1)
 
 const tabs = ref(['游戏记录'])
