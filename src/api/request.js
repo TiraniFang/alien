@@ -5,14 +5,12 @@ import { ElMessage } from 'element-plus'
 import 'element-plus/dist/index.css'
 import axios from 'axios';
 import router from '../router'; 
-
-
+console.log(router.currentRoute.value.fullPath  )
 // 创建axios实例
 const service = axios.create({
   // baseURL: 'http://admin.itytl.com', // api的base_url
   timeout: 10000 // 请求超时时间
 });
- 
 // 请求拦截器
 service.interceptors.request.use(
   config => {
@@ -34,7 +32,7 @@ service.interceptors.request.use(
 service.interceptors.response.use(
   res => {
     // 对响应数据做处理，例如只返回data部分
-    if (res.data.code == 20000 && localStorage.getItem('loginStatus')) {
+    if (res.data.code == 20000 && !localStorage.getItem('loginStatus') && router.currentRoute.value.fullPath != '/login') {
       ElMessage.error('请先登录')
       router.replace('/login')
       return

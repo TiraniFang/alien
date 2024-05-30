@@ -2,9 +2,9 @@
   <div>
     <div class="layouts"></div>
     <div class="gift-result">
-      <img class="icon"  src="../../../assets/coin.png" alt="">
-      <img class="icon" src="../../../assets/rebbag.png" alt="">
-      <h2>恭喜您，获得10积分</h2>
+      <img class="icon" v-if="props.detail.type == '积分'"  src="../../../assets/coin.png" alt="">
+      <img class="icon" v-else src="../../../assets/rebbag.png" alt="">
+      <h2>恭喜您，获得{{props.detail.rewardIntegral}}{{ props.detail.type }}</h2>
       <p>完成更多任务领取积分兑换奖品~</p>
       <div class="btn" @click="continueTask">去做任务</div>
     </div>

@@ -15,7 +15,7 @@
       <div class="theme">
         <img src="../../assets/theme.png" alt="">
         <p>完成下方每日任务即可免费领取对应的奖励</p>
-        <div class="start-game" @click="callJavaMethod">开始游戏</div>
+        <el-button class="start-game" @click="launchLOL" :disabled="isDisabled">{{ btnMsg }}</el-button>
       </div>
       <div class="task">
         <div class="container">
@@ -29,16 +29,15 @@
           </div>
           <div class="flex space-between">
             <div class="item" v-for="(item, index) in taskList" :key="item">
-              <img class="icon" v-if="index != 0" src="../../assets/coin.png" alt="">
-              <img class="icon" v-if="index == 0" src="../../assets/rebbag.png" alt="">
+              <img class="icon" v-if="item.type == '积分'" src="../../assets/coin.png" alt="">
+              <img class="icon" v-else src="../../assets/rebbag.png" alt="">
 
               <div class="title">奖励{{item.rewardIntegral}}{{ item.type }}</div>
               <div class="bottom">
                 <div>任务要求：任意模式获胜</div>
                 <p>当前进度：{{item.finish}}/{{item.total}}</p>
-                <div class="btn none" v-if="item.status == 0">未完成</div>
-                <div class="btn" v-if="item.status == 1" @click="giftDialogShow(item)">领</div>
-                <div class="btn none" v-else>已领</div>
+                <!-- <div class="btn none" v-if="item.status == 0">未完成</div> -->
+                <div class="btn" v-if="item.status == 1">已发放</div>
               </div>
             </div>
           </div>
@@ -55,16 +54,21 @@ import GiftDialog from '../gift/components/gift-dialog.vue';
 import Rules from './components/rules.vue';
 import { ElMessage } from 'element-plus'
 import api from '../../api/request'
-
+import { useRouter } from 'vue-router';
+const router = useRouter();
 // 当前游戏索引
 const currentIndex = ref(0)
+const btnMsg = ref('开始游戏')
+const info = ref(null)
+const gameType = ref('LOL')
+const isDisabled = ref(false)
+const taskList = ref([])
 // 点击的当前任务奖励
 const currentGift = ref(0)
 const showGiftDialog = ref(false)
 const showRuleDialog = ref(false)
-const imgList = ref([
-  '/banner01.jpg'
-])
+const timer = ref(null)
+
 
 const gameList = ref([
   {
@@ -79,35 +83,42 @@ const gameList = ref([
   }
 ])
 
-const taskList = ref([
-  {
-    id: 1,
-    type: '网费', // 奖励类型
-    rewardIntegral: 30, // 奖励数量
-    finish: 1, // 已完成几把游戏
-    total: 11, // 共需完成几把头像
-    status: 0  // 状态   0 未完成  1 已完成。未领取   2 已领取
-  },
-  {
-    id: 2,
-    type: '积分',
-    rewardIntegral: 20,
-    finish: 3,
-    total: 3,
-    status: 1
-  },{
-    id: 3,
-    type: '积分',
-    rewardIntegral: 10,
-    finish: 5,
-    total: 5,
-    status: 2
+
+const launchLOL = () => {
+  btnMsg.value = '启动游戏中...'
+  if (window.client) {
+    try {
+     isDisabled.value = true
+     const jsonString = window.client.launchGame(gameType.value);
+     const data = JSON.parse(jsonString);
+     info.value = data;
+     let timer = setTimeout(() => {
+      btnMsg.value = '开始游戏'
+      isDisabled.value = false
+      clearTimeout(timer)
+     },18000)
+    } catch (error) {
+      ElMessage.error(error)
+    }
+   } else {
+   }
   }
-])
+
 
 // 切换游戏
 const switchGame = (index) => {
-  currentIndex.value = index
+        currentIndex.value = index
+
+  if (index == 1 ) {
+    gameType.value = 'Naraka'
+
+  } else {
+    gameType.value = 'LOL'
+  }
+  clearInterval(timer.value)
+  timer.value = null
+  getCaro()
+
 };
 // 获取奖励
 const giftDialogShow = (item) => {
@@ -118,13 +129,34 @@ const giftDialogShow = (item) => {
 // 获取任务数据列表
 const getTaskList = () => {
   api.post('/method/account/', {
-    method: 'GET_QUEST_DATA',
+    method: 'GET_QUEST_DATA_NEW',
   }).then(res => {
     console.log(res)
+    taskList.value = res.data.result.slice(0,2)
+    const last = res.data.result[res.data.result.length - 1]
+    taskList.value.push(last)
   })
 }
+if (!localStorage.getItem('loginStatus')) {
+  router.replace('/login')
+} else {
+  getTaskList()
+}
 
-getTaskList()
+const getCaro  = () => {
+  timer.value = setInterval(() => {
+    if (currentIndex.value == 0 ) {
+      currentIndex.value = 1
+      gameType.value = 'Naraka'
+
+    } else {
+      currentIndex.value = 0
+      gameType.value = 'LOL'
+
+    }
+  },5000)
+}
+getCaro()
 </script>
 <style lang="scss">
 .home {
@@ -154,12 +186,13 @@ getTaskList()
       width: 270px;
       height: 82px;
       margin-bottom: 10px;
-      border: 2px solid rgb(53, 53, 53);
+      border: 2px solid rgb(173, 163, 123);
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
       position: relative;
       cursor: pointer;
+      transition: all .2s;
       .bg {
         width: 100%;
         height: 100%;
@@ -167,9 +200,10 @@ getTaskList()
         position: absolute;
         top: 0;
         left: 0;
+        transition: all .2s;
         opacity: 1;
       }
-      &.on {
+      &.on , &:hover{
         border-color:  #ffd249;
         .bg {
           opacity: 0;
@@ -196,9 +230,9 @@ getTaskList()
     .start-game {
       width: 248px;
       height: 68px;
+      border-color: transparent;
       background: linear-gradient(to right, #ffd44a, #ff8a0a);
       border-radius: 4px;
-      line-height: 68px;
       text-align: center;
       font-size: 30px;
       font-weight: bold;
@@ -226,10 +260,11 @@ getTaskList()
       font-size: 14px;
     }
     .item {
-      width: 430px;
-      height: 198px;
+      width: 32%;
       background: url(../../assets/task-bj.png) no-repeat;
-      background-size: contain;
+      background-size: cover;
+      border-radius: 30px;
+      overflow: hidden;
       margin-top: 20px;
       position: relative;
       .icon {
@@ -244,16 +279,17 @@ getTaskList()
         padding-left: 30px;
       }
       .bottom {
-        margin-top: 40px;
+        margin-top: 50px;
         padding-left: 30px;
         color: #573303;
+        padding-bottom: 20px;
         p {
           margin-top: 10px;
         }
         .btn {
           width: 60px;
           height: 60px;
-          background: linear-gradient(to bottom, #f0a954, #eb6b35);
+          background: linear-gradient(to bottom, #9e9e9e, #838383);
           border-radius: 50%;
           position: absolute;
           right: 20px;
@@ -262,7 +298,7 @@ getTaskList()
           text-align: center;
           color: #fff;
           font-weight: bold;
-          font-size: 20px;
+          font-size: 12px;
           cursor: pointer;
           &.none {
             background: #999;

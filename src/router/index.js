@@ -5,12 +5,28 @@ const routes = [
       {
         path: '/',
         redirect: '/home',
-        component: () => import(/* webpackChunkName: "/" */ '../views/home/index.vue')
+        component: () => import(/* webpackChunkName: "/" */ '../views/home/index.vue'),
+        beforeRouteEnter: (to, from, next) => {
+          console.log(to)
+            if (localStorage.getItem('loginStatus')) {
+              next()
+            } else {
+              next({path: '/login'})
+            }
+          }
       },
       {
         path: '/home',
         name: 'Home',
-        component: () => import(/* webpackChunkName: "home" */ '../views/home/index.vue')
+        component: () => import(/* webpackChunkName: "home" */ '../views/home/index.vue'),
+        beforeRouteEnter: (to, from, next) => {
+          console.log(to)
+            if (localStorage.getItem('loginStatus')) {
+              next()
+            } else {
+              next({path: '/login'})
+            }
+        }
       },
       {
         path: '/gift',

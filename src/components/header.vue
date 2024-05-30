@@ -1,6 +1,8 @@
 <template>
   <div>
     <div class="nav-header">
+      <div class="min" @click="minimizeWindow('min')"></div>
+      <div class="close" @click="dialogVisible = true"></div>
       <div class="container" style="height: auto">
         <div class="flex space-between align-center">
           <div class="logo flex align-center">
@@ -35,28 +37,65 @@
             <div class="flex align-center">
               <div class="avatar"><img src="../assets/avatar.png" alt=""></div>
               <div>
-                <h5>被风吹过的夏天</h5>
-                <p>当前积分：<span>1200</span></p>
+                <h5>默认昵称</h5>
+                <p>当前积分：<span>{{ myIntergral }}</span></p>
               </div>
             </div>
             <div class="drop-menu">
-              <router-link to="/user#match">比赛记录</router-link>
-              <router-link to="/user#cash" >现金赛记录</router-link>
-              <router-link to="/user#gift">奖励记录</router-link>
-              <router-link to="/user#exchange">兑换记录</router-link>
+              <router-link to="/user">个人中心</router-link>
+              <router-link to="/user#cash" >游戏记录</router-link>
+              <a href="javascript:;" @click="toQuit">退出登录</a>
             </div>
           </div>
         </div>
       </div>
-
+  <!-- <div v-if="info" style="background: #fff;">
+        <h2>Received Information:</h2>
+        <ul>
+         <li v-for="(value, key) in info" :key="key">{{ key }}: {{ value }}</li>
+          <li>sign: {{sign}}</li>
+          <li>sign2: {{sign2}}</li>
+          <li>cookie: {{cookie}}</li>
+          <li>number: {{number}}</li>
+          <li>info: {{info}}</li>
+        </ul>
+      </div>   -->
     </div>
+     <el-dialog
+      v-model="dialogVisible"
+      title="关闭窗口"
+      width="500"
+    >
+      <span>确认关闭程序吗？</span>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="dialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="minimizeWindow('exit')">
+            确定
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
  
 </template>
 <script setup>
 import  { ref , watch , onMounted} from 'vue'
 import { useRouter, useRoute } from 'vue-router';
+import { ElMessage } from 'element-plus'
+import Cookies from 'js-cookie';
+import CryptoJS from 'crypto-js';
+
+import api from '../api/request'
+// import { getIntergral } from '../utils/base.js'
+const dialogVisible = ref(false)
 const currentIndex = ref(0)
+const myIntergral = ref(0)
+const info = ref(null)
+const sign = ref('')
+const sign2 = ref('')
+const number = ref(localStorage.getItem('numberToken'))
+const cookie = document.cookie.replace(/(?:(?:^|.*;\s*)LOL_MATCH_SERVER\s*\=\s*([^;]*).*$)|^.*$/, "$1");
 const menus = ref(
   [
     {
@@ -85,8 +124,16 @@ const route = useRoute();
 onMounted (() => {
   isCurrentPath(route.path)
 
-})
+  if (window.client) {
+   window.handleMatchData = handleMatchData;
+   window.minimizeWindow = minimizeWindow
+   window.gameLogin = gameLogin
+   window.gameLogout = gameLogout
+  } else {
+   console.log("Java bridge not found");
+  }
 
+})
 watch(
   () => route.path,
   (path) => {
@@ -118,6 +165,140 @@ const isCurrentPath = (path) => {
 
   }
 }
+
+// 上传游戏数据
+//  const handleMatchData = (data) => {
+//    console.log("handleMatchData method called with data: " + JSON.stringify(data));
+//    info.value = "Match data received: " + JSON.stringify(data);
+//    return "Match data processed";
+//   }
+const handleMatchData = (str) => {
+  const data = JSON.stringify(str);
+  info.value = JSON.parse(data)
+
+  sign.value = ''
+  sign2.value = ''
+  sign.value = localStorage.getItem('numberToken') + info.value.summonerId + info.value.server  + info.value.tier + info.value.queueId + info.value.gameLength +  info.value.championId + info.value.championsKill  + info.value.assists  + info.value.numDeaths + info.value.goldEarned  + info.value.minionsKilled  + info.value.level   + info.value.visionScore   +  info.value.win   + info.value.rank +  'LOLUID1FE7111E9FB0FBF7B13E338923FC2C32FG'
+  sign2.value = sign.value
+  // MD5加密
+  sign.value = CryptoJS.MD5(sign.value).toString()
+  api.post('/method/account/',{
+    method: 'SUBMIT_MATCH_DATA',
+    Type: info.value.gameType,
+    Tier: info.value.tier,
+    Server: info.value.server,
+    SummonerName:info.value.summonerName,
+    QueueId: info.value.queueId,
+    SummonerId: info.value.summonerId,
+    GameLength: info.value.gameLength ,
+    ChampionId: info.value.championId ,
+    ChampionsKilled: info.value.championsKill ,
+    Assists: info.value.assists ,
+    NumDeaths: info.value.numDeaths ,
+    GoldEarned: info.value.goldEarned ,
+    MinionsKilled: info.value.minionsKilled ,
+    Level: info.value.level ,
+    VisionScore: info.value.visionScore,
+    Win: info.value.win ,
+    Rank: info.value.rank ,
+    Sign: sign.value ,
+  }).then((res) => {
+      if (res.data.code == 10000) {
+        getIntegral()
+        return true
+    } else {
+        return res.data.message
+    }
+  })
+}
+// 游戏登录
+const gameLogin = (obj) => {
+  const data = JSON.stringify(obj);
+  info.value = JSON.parse(data)
+  sign.value = ''
+  sign.value = info.value.server + info.value.accountID + info.value.summonerId + 'LOLUID1FE7111E9FB0FBF7B13E338923FC2C32FG'
+  // MD5加密
+
+  sign.value = CryptoJS.MD5(sign.value).toString()
+
+  api.post('/method/account/',{
+    method: 'GAME_USER_LOGIN',
+    Server: data.server,
+    AccountID: data.accountID,
+    SummonerId: data.summonerId,
+    SummonerName: data.summonerName,
+    Sign: sign.value
+  }).then(res => {
+    info.value = res
+ //   if(res.data.code == 10000) {
+ //     return true
+  //  } else {
+  //    return res.data.message
+  //  }
+  })
+}
+
+// 游戏登出
+const gameLogout = (obj) => {
+  // const data = JSON.parse(obj);
+  api.post('/method/account/').then(res => {
+//if(res.data.code == 10000) {
+ //     return true
+ //   } else {
+ //     return res.data.message
+ //   }
+  })
+}
+
+// 最小化、关闭窗口
+const minimizeWindow  = (str) => {
+  console.log("mini button clicked");
+ 
+  if (window.client) {
+    try {
+      window.client.minimizeWindow(str);
+       if (str == 'exit') {
+          dialogVisible.value = false
+        }
+    } catch (error) {
+      console.error("Failed to call Java method or parse JSON:", error);
+    }
+  } else {
+    console.log("Java bridge not found");
+  }
+}
+// 获取当前用户积分
+const getIntegral = () => {
+  api.post('/method/account/', {
+    method: 'GET_USER_INTEGRAL'
+  }).then(res => {
+    if (res.data.code = 10000) {
+      localStorage.setItem('myIntergral', res.data.result.number)
+      localStorage.setItem('matchCount', res.data.result.match_count)
+      localStorage.setItem('matchLevel', res.data.result.match_level)
+      myIntergral.value = localStorage.getItem('myIntergral')
+    }
+  })
+}
+
+// 退出登录
+const toQuit = () => {
+  // 退出登录
+  api.post('/method/account/', {
+    method: 'GAME_USER_LOGOUT',
+  }).then(res => {
+    if (res.data.code == 10000) {
+      ElMessage.success('退出成功')
+      Object.keys(Cookies.get()).forEach(name => {
+        Cookies.remove(name);
+      });
+      localStorage.clear()
+      router.replace('/login')
+    }
+  })
+}
+// getIntergral()
+localStorage.getItem('loginStatus') && getIntegral()
 </script>
 <style lang="scss" scoped>
 .nav-header {
@@ -238,5 +419,16 @@ const isCurrentPath = (path) => {
   &:hover .drop-menu {
     display: block;
   }
+}
+:deep(.el-dialog) {
+  background: rgb(36, 36, 36);
+}
+:deep(.el-dialog__title), 
+:deep(.el-dialog__body) {
+  color: #f5f5f5;
+}
+:deep(.el-button--primary) {
+  background: #eb6b35;
+  border-color: #eb6b35;
 }
 </style>

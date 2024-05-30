@@ -7,6 +7,7 @@
 <script setup>
 import { useRoute } from 'vue-router';
 import Header from './components/header.vue';
+
 const route = useRoute()
 
 
@@ -89,7 +90,7 @@ img {
 }
 #app {
   background: #222;
-  height: 840px;
+  height: 100vh;
 }
 
 /* #app > div >div {
@@ -98,6 +99,26 @@ img {
 } */
 p {
   margin: 0;
+}
+.min {
+  width: 20px;
+  height: 20px;
+  background: url(./assets/min.png) no-repeat center;
+  background-size: contain;
+  position: fixed;
+  right: 50px;
+  top: 10px;
+  cursor: pointer;
+}
+.close {
+  width: 20px;
+  height: 20px;
+  background: url(./assets/close.png) no-repeat center;
+  background-size: contain;
+  position: fixed;
+  right: 10px;
+  top: 10px;
+  cursor: pointer;
 }
 .container {
   width: 1440px;

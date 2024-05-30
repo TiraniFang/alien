@@ -10,15 +10,15 @@
       </div>
       <div class="all-gift">
         <div class="flex space-between flex-wrap">
-            <div class="item" v-for="(item, index) in 9" :key="item">
-              <img class="icon" v-if="index != 0" :src="require('../../assets/coin.png')" alt="">
-              <img class="icon" v-if="index == 0" :src="require('../../assets/rebbag.png')" alt="">
-              <div class="title">奖励10积分</div>
+            <div class="item" v-for="(item, index) in taskList" :key="item">
+              <img class="icon" v-if="item.type == '积分'" :src="require('../../assets/coin.png')" alt="">
+              <img class="icon" v-else :src="require('../../assets/rebbag.png')" alt="">
+              <div class="title">奖励{{item.rewardIntegral}}{{item.type}}</div>
               <div class="bottom">
                 <div>任务要求：任意模式获胜</div>
-                <p>当前进度：1/3</p>
-                <div class="btn" v-if="index == 0" @click="giftDialogShow(item)">领</div>
-                <div class="btn none" v-else>已领</div>
+                <p>当前进度：{{item.finish}}/{{item.total}}</p>
+                <!-- <div class="btn" v-if="index == 0" @click="giftDialogShow(item)">领</div> -->
+                <div class="btn none" v-if="item.status == 1">已发放</div>
               </div>
             </div>
           </div>
@@ -31,17 +31,42 @@
 </template>
 <script setup>
 import { ref } from 'vue'
+import api from '../../api/request'
 import GiftDialog from '../gift/components/gift-dialog.vue';
 import Rules from '../home/components/rules.vue';
+import { ElMessage } from 'element-plus'
 
 const showGiftDialog = ref(false)
 const showRuleDialog = ref(false)
-
+const taskList = ref([])
 const currentGift = ref({})
 const giftDialogShow = (item) => {
   showGiftDialog.value = true
   currentGift.value = item
+  // getReward(item.id)
 }
+
+// 获取任务数据列表
+const getTaskList = () => {
+  api.post('/method/account/', {
+    method: 'GET_QUEST_DATA_NEW',
+  }).then(res => {
+    console.log(res)
+    taskList.value = res.data.result
+  })
+}
+// 领取任务
+const getReward = (id) => {
+  api.post('/method/account/', {
+    method: 'REQUEST_QUEST_REWARD',
+    id: id
+  }).then(res => {
+    if (res.data.code == 10000) {
+      showGiftDialog.value = true
+    }
+  })
+}
+getTaskList()
 </script>
 <style lang="scss">
 .gift {
@@ -81,10 +106,11 @@ const giftDialogShow = (item) => {
     }
   }
   .item {
-      width: 430px;
-      height: 198px;
-      background: url(../../assets/task-bj.png) no-repeat;
-      background-size: contain;
+      width:  32%;
+      background: url(../../assets/task-bj.png) no-repeat center;
+      background-size: cover;
+      border-radius: 30px;
+      overflow: hidden;
       margin-top: 20px;
       position: relative;
       .icon {
@@ -93,14 +119,16 @@ const giftDialogShow = (item) => {
         top: 20px;
       }
       .title {
-        font-size: 30px;
+        font-size: 24px;
         color: #6b3c11;
-        padding-top:30px;
+        padding-top:40px;
         padding-left: 30px;
       }
       .bottom {
-        margin-top: 40px;
+        margin-top: 30px;
         padding-left: 30px;
+        padding-top: 10px;
+        padding-bottom: 20px;
         color: #573303;
         p {
           margin-top: 10px;
@@ -108,7 +136,7 @@ const giftDialogShow = (item) => {
         .btn {
           width: 60px;
           height: 60px;
-          background: linear-gradient(to bottom, #f0a954, #eb6b35);
+          background: linear-gradient(to bottom, #9e9e9e, #838383);
           border-radius: 50%;
           position: absolute;
           right: 20px;
@@ -118,7 +146,7 @@ const giftDialogShow = (item) => {
           color: #fff;
           font-weight: bold;
           cursor: pointer;
-          font-size: 20px;
+          font-size: 12px;
           &.none {
             background: #999;
           }
