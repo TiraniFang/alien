@@ -4,16 +4,16 @@ import { createRouter, createWebHashHistory  } from 'vue-router'
 const routes = [
       {
         path: '/',
-        redirect: '/home',
-        component: () => import(/* webpackChunkName: "/" */ '../views/home/index.vue'),
-        beforeRouteEnter: (to, from, next) => {
-          console.log(to)
-            if (localStorage.getItem('loginStatus')) {
-              next()
-            } else {
-              next({path: '/login'})
-            }
-          }
+        redirect: '/login',
+        component: () => import(/* webpackChunkName: "/" */ '../views/login/index.vue'),
+        // beforeRouteEnter: (to, from, next) => {
+        //   console.log(to)
+        //     if (localStorage.getItem('loginStatus')) {
+        //       next()
+        //     } else {
+        //       next({path: '/login'})
+        //     }
+        //   }
       },
       {
         path: '/home',
@@ -36,6 +36,10 @@ const routes = [
         path: '/match',
         name: 'Match',
         component: () => import(/* webpackChunkName: "match" */ '../views/match/index.vue')
+      },{
+        path: '/shop',
+        name: 'Shop',
+        component: () => import(/* webpackChunkName: "shop" */ '../views/shop/index.vue')
       },{
         path: '/user',
         name: 'User',

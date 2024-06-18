@@ -1,16 +1,62 @@
 <template>
-  <Header v-if="route.path != '/login'" />
   <router-view></router-view>
 
 </template>
-
 <script setup>
+import { ref , onMounted} from 'vue'
 import { useRoute } from 'vue-router';
 import Header from './components/header.vue';
+const dialogVisible = ref(false)
+const message = ref('')
+const loginStatus = ref('')
+loginStatus.value = localStorage.getItem('loginStatus')
+
+onMounted (async() => {
+
+
+})
 
 const route = useRoute()
+// 在网页中添加一个拖拽区域 
+// const dragArea = document.createElement('div'); dragArea.style.position = 'absolute'; dragArea.style.top = '0'; dragArea.style.left = '0'; dragArea.style.width = '100%'; dragArea.style.height = '30px';
+//  // 可以调整拖拽区域的高度 
+//  dragArea.style.backgroundColor = 'transparent'; document.body.appendChild(dragArea); 
+//  // 添加拖拽事件监听 
+//  const isDragging = ref(false); 
+//  const currentX = ref(0)
+//  const currentY = ref(0)
+//  const initialX = ref(0)
+//  const initialY = ref(0)
+//  const xOffset = ref(0)
+//  const yOffset = ref(0)
 
-
+//  const dragStart = (e) => { 
+//   initialX = e.clientX - xOffset; 
+//   initialY = e.clientY - yOffset; 
+//   if (e.target === dragArea) { 
+//     isDragging.value = true;
+//    } } 
+//    const dragEnd = (e) => {
+//      initialX.value = currentX.value; 
+//      initialY.value = currentY.value; 
+//      isDragging.value = false; 
+//     }
+//      const drag = (e) => { 
+//       if (isDragging) { 
+//         e.preventDefault();
+//          currentX.value = e.clientX - initialX.value;
+//           currentY.value = e.clientY - initialY.value; 
+//           xOffset.value = currentX.value; 
+//           yOffset.value = currentY.value; 
+//           setTranslate(currentX.value, currentY.value, window.client.stage); 
+//         } 
+//     } 
+//   const setTranslate = (xPos, yPos, el) => { 
+//     el.setX(xPos); el.setY(yPos); 
+//   }
+//   dragArea.addEventListener('mousedown', dragStart); 
+//  dragArea.addEventListener('mouseup', dragEnd); 
+//  dragArea.addEventListener('mousemove', drag); 
 </script>
 
 <style>
@@ -82,6 +128,9 @@ img {
 .space-around {
   justify-content: space-around;
 }
+.space-center {
+  justify-content: center;
+}
 .align-center {
   align-items: center;
 }
@@ -101,24 +150,29 @@ p {
   margin: 0;
 }
 .min {
-  width: 20px;
-  height: 20px;
+  width: 10px;
+  height: 10px;
   background: url(./assets/min.png) no-repeat center;
   background-size: contain;
   position: fixed;
-  right: 50px;
-  top: 10px;
+  right: 60px;
+  top: 20px;
+  transform: translateY(-50%);
   cursor: pointer;
+  z-index: 10;
+
 }
 .close {
-  width: 20px;
-  height: 20px;
+  width: 10px;
+  height: 10px;
   background: url(./assets/close.png) no-repeat center;
   background-size: contain;
   position: fixed;
-  right: 10px;
-  top: 10px;
+  right: 20px;
+  top: 15px;
+
   cursor: pointer;
+  z-index: 10;
 }
 .container {
   width: 1440px;
@@ -143,5 +197,19 @@ img {
     background-color: #f9f9f9;
   }
 }
-
+.el-dialog {
+  background: rgb(36, 36, 36);
+}
+.el-dialog__title, 
+.el-dialog__body {
+  color: #f5f5f5;
+}
+.el-button--primary {
+  background: #eb6b35;
+  border-color: #eb6b35;
+}
+.el-button--primary:hover {
+  background: #eb6b35;
+  border-color: #eb6b35;
+}
 </style>

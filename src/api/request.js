@@ -38,7 +38,7 @@ service.interceptors.response.use(
       return
 
     } else {
-      if (res.data.code == '10009') {
+      if (res.data.code == '10009' && res.data.message != '游戏帐号未登陆') {
         ElMessage.error({
           message: res.data.message
         })

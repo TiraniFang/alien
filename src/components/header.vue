@@ -2,54 +2,84 @@
   <div>
     <div class="nav-header">
       <div class="min" @click="minimizeWindow('min')"></div>
-      <div class="close" @click="dialogVisible = true"></div>
+      <div class="close" @click="minimizeWindow('min')"></div>
       <div class="container" style="height: auto">
         <div class="flex space-between align-center">
           <div class="logo flex align-center">
-            <img class="logo" src="../assets/logo.png" alt="">
-            <img class="slogon" src="../assets/slogon.png" alt="">
+            <img class="logo" src="../assets/logo.png" alt="" />
+            <div>
+              <img class="slogon" src="../assets/slogon.png" alt="" />
+              <span>{{ netBarName }}欢迎您~</span>
+            </div>
           </div>
           <div class="menu flex align-center">
-            <router-link v-for="(item,index) in menus" :key="item.text" :class="{'on': currentIndex == index}" :to="item.path" v-on:click.prevent>
+            <router-link
+              v-for="(item, index) in menus"
+              :key="item.text"
+              :class="{ on: currentIndex == index }"
+              :to="item.path"
+              v-on:click.prevent
+            >
               <div class="flex align-center">
-                <img class="icon" v-if="currentIndex == index" :src="item.activeIcon" alt="">
-                <img class="icon" v-else :src="item.icon" alt="">
+                <img
+                  class="icon"
+                  v-if="currentIndex == index"
+                  :src="item.activeIcon"
+                  alt=""
+                />
+                <img class="icon" v-else :src="item.icon" alt="" />
                 <span>{{ item.text }}</span>
               </div>
               <!-- <div class="ewm" v-if="index == menus.length -1">
                 <img src="../assets/login-ewm.png" alt="">
               </div> -->
             </router-link>
-            <a href="javascript:;">
-              <div class="flex align-center">
-                <!-- <img class="icon" v-if="currentIndex == index" src="../assets/shop-on.png" alt=""> -->
-                <img class="icon" src="../assets/shop.png" alt="">
-                <span>商城</span>
-              </div>
-              <div class="ewm" >
-                <img src="../assets/login-ewm.png" alt="">
-              </div>
-            </a>
-
           </div>
 
           <div class="personal-center">
             <div class="flex align-center">
-              <div class="avatar"><img src="../assets/avatar.png" alt=""></div>
+              <div class="avatar">
+                <el-progress
+                  type="circle"
+                  :percentage="percentage"
+                  status="exception"
+                  :stroke-width="10"
+                ></el-progress>
+                <p class="inter" :class="{ show: showAddInter }"><span>+10</span></p>
+                <img src="../assets/logo.jpg" alt="" />
+              </div>
               <div>
-                <h5>默认昵称</h5>
-                <p>当前积分：<span>{{ myIntergral }}</span></p>
+                <h5>外星人用户</h5>
+                <!-- <p style="margin-bottom: 5px">
+                  <el-tooltip
+                    class="box-item"
+                    effect="light"
+                    :content="'在线满一小时加10积分，当前进度' + percentage + '%'"
+                    placement="top"
+                  >
+                    <el-progress
+                      :percentage="percentage"
+                      :stroke-width="5"
+                      status="warning"
+                      striped
+                      striped-flow
+                    />
+                  </el-tooltip>
+                </p> -->
+                <p>
+                  当前积分：<span>{{ myIntergral }}</span>
+                </p>
               </div>
             </div>
             <div class="drop-menu">
               <router-link to="/user">个人中心</router-link>
-              <router-link to="/user#cash" >游戏记录</router-link>
-              <a href="javascript:;" @click="toQuit">退出登录</a>
+              <!-- <router-link to="/user#cash" >游戏记录</router-link> -->
+              <a href="javascript:;" @click="dialogVisible = true">退出登录</a>
             </div>
           </div>
         </div>
       </div>
-  <!-- <div v-if="info" style="background: #fff;">
+      <!-- <div v-if="info" style="background: #fff;">
         <h2>Received Information:</h2>
         <ul>
          <li v-for="(value, key) in info" :key="key">{{ key }}: {{ value }}</li>
@@ -61,269 +91,317 @@
         </ul>
       </div>   -->
     </div>
-     <el-dialog
-      v-model="dialogVisible"
-      title="关闭窗口"
-      width="500"
-    >
-      <span>确认关闭程序吗？</span>
+    <el-dialog v-model="dialogVisible" title="退出登录" width="500">
+      <span>确认退出吗？</span>
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="dialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="minimizeWindow('exit')">
-            确定
-          </el-button>
+          <el-button type="primary" @click="toQuit"> 确定 </el-button>
+        </div>
+      </template>
+    </el-dialog>
+    <el-dialog v-model="dialogGameVisible" title="提示" width="500">
+      <span>{{ message }}</span>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button type="primary" @click="dialogGameVisible = false"> 确定 </el-button>
         </div>
       </template>
     </el-dialog>
   </div>
- 
 </template>
 <script setup>
-import  { ref , watch , onMounted} from 'vue'
-import { useRouter, useRoute } from 'vue-router';
-import { ElMessage } from 'element-plus'
-import Cookies from 'js-cookie';
-import CryptoJS from 'crypto-js';
+import { ref, watch, onMounted, onBeforeUnmount } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import { ElMessage, ElMessageBox } from "element-plus";
+import Cookies from "js-cookie";
+import CryptoJS from "crypto-js";
 
-import api from '../api/request'
+import api from "../api/request";
 // import { getIntergral } from '../utils/base.js'
-const dialogVisible = ref(false)
-const currentIndex = ref(0)
-const myIntergral = ref(0)
-const info = ref(null)
-const sign = ref('')
-const sign2 = ref('')
-const number = ref(localStorage.getItem('numberToken'))
-const cookie = document.cookie.replace(/(?:(?:^|.*;\s*)LOL_MATCH_SERVER\s*\=\s*([^;]*).*$)|^.*$/, "$1");
-const menus = ref(
-  [
-    {
-      text: '主页',
-      path: '/home',
-      icon: require('../assets/home.png'),
-      activeIcon: require('../assets/home-on.png')
-    },
-    {
-      text: '闯关',
-      path: '/match',
-      icon: require('../assets/match-icon.png'),
-      activeIcon: require('../assets/match-on.png')
-    },
-    {
-      text: '福利',
-      path: '/gift',
-      icon: require('../assets/gift.png'),
-      activeIcon: require('../assets/gift-on.png')
-    }
-  ]
-)
+
+const emits = defineEmits(["childEvent"]);
+const percentage = ref(0);
+const dialogGameVisible = ref(false);
+const message = ref("");
+const dialogVisible = ref(false);
+const currentIndex = ref(0);
+const myIntergral = ref(localStorage.getItem("myIntergral"));
+const showAddInter = ref(false);
+const info = ref(null);
+const sign = ref("");
+const sign2 = ref("");
+const netBarName = ref(localStorage.getItem("netBarName"));
+const timer3 = ref(null);
+const timeCount = ref(null);
+const seconds = ref(0);
+const number = ref(localStorage.getItem("numberToken"));
+const cookie = document.cookie.replace(
+  /(?:(?:^|.*;\s*)LOL_MATCH_SERVER\s*\=\s*([^;]*).*$)|^.*$/,
+  "$1"
+);
+
+const menus = ref([
+  {
+    text: "主页",
+    path: "/home",
+    icon: require("../assets/home.png"),
+    activeIcon: require("../assets/home-on.png"),
+  },
+  {
+    text: "比赛",
+    path: "/match",
+    icon: require("../assets/match-icon.png"),
+    activeIcon: require("../assets/match-on.png"),
+  },
+  {
+    text: "福利",
+    path: "/gift",
+    icon: require("../assets/gift.png"),
+    activeIcon: require("../assets/gift-on.png"),
+  },
+  {
+    text: "商城",
+    path: "/shop",
+    icon: require("../assets/shop.png"),
+    activeIcon: require("../assets/shop-on.png"),
+  },
+]);
 const router = useRouter();
 const route = useRoute();
 
-onMounted (() => {
-  isCurrentPath(route.path)
+// 一小时倒计时
+timeCount.value = setInterval(() => {
+  seconds.value++;
+  percentage.value = Number(((seconds.value / 60 / 60) * 100).toFixed(2));
+  if (seconds.value == 3600) {
+    showAddInter.value = true;
+    seconds.value = 0;
+    percentage.value = 0;
+    getIntegral();
+  } else {
+    showAddInter.value = false;
+  }
+}, 1000);
+
+onMounted(async () => {
+  isCurrentPath(route.path);
 
   if (window.client) {
-   window.handleMatchData = handleMatchData;
-   window.minimizeWindow = minimizeWindow
-   window.gameLogin = gameLogin
-   window.gameLogout = gameLogout
+    window.minimizeWindow = minimizeWindow;
+    window.showGamePopupTip = showGamePopupTip;
+    window.handleMatchData = handleMatchData;
+    //  window.gameLogin = gameLogin
+    //  window.gameLogout = gameLogout
   } else {
-   console.log("Java bridge not found");
+    console.log("Java bridge not found");
   }
+  // try {
+  //   const result = await window.handleMatchData();
+  //   console.log("Result from handleMatchData", result);
+  // } catch (error) {
+  //   console.log("Error", error);
+  // }
+});
 
-})
+// 查询登录状态时间
+
+const checkLoginStatus = () => {
+  api
+    .post("/method/account/", {
+      method: "CHECK_LOGIN_LIFE",
+    })
+    .then((res) => {});
+};
+
+timer3.value = setInterval(() => {
+  checkLoginStatus();
+}, 60000);
+checkLoginStatus();
+
 watch(
   () => route.path,
   (path) => {
-    isCurrentPath(path)
-    console.log(path);
+    isCurrentPath(path);
   }
 );
-
+onBeforeUnmount(() => {
+  clearInterval(timer3.value);
+  timer3.value = null;
+});
+const showGamePopupTip = (str) => {
+  dialogGameVisible.value = true;
+  message.value = str;
+};
 const isCurrentPath = (path) => {
   switch (path) {
-    case '/': 
-    currentIndex.value = 0
-    break;
+    case "/":
+      currentIndex.value = 0;
+      break;
 
-    case '/home':
-      currentIndex.value = 0
+    case "/home":
+      currentIndex.value = 0;
       break;
-    case '/match':
-      currentIndex.value = 1
+    case "/match":
+      currentIndex.value = 1;
       break;
-    case '/gift':
-      currentIndex.value = 2
+    case "/gift":
+      currentIndex.value = 2;
       break;
-    case '/shop':
-      currentIndex.value = 3
+    case "/shop":
+      currentIndex.value = 3;
       break;
-    default: 
-    currentIndex.value = -1
-
+    default:
+      currentIndex.value = -1;
   }
-}
+};
 
-// 上传游戏数据
-//  const handleMatchData = (data) => {
-//    console.log("handleMatchData method called with data: " + JSON.stringify(data));
-//    info.value = "Match data received: " + JSON.stringify(data);
-//    return "Match data processed";
-//   }
-const handleMatchData = (str) => {
-  const data = JSON.stringify(str);
-  info.value = JSON.parse(data)
+const handleMatchData = async function (str, callback) {
+  try {
+    const data = JSON.stringify(str);
+    info.value = JSON.parse(data);
 
-  sign.value = ''
-  sign2.value = ''
-  sign.value = localStorage.getItem('numberToken') + info.value.summonerId + info.value.server  + info.value.tier + info.value.queueId + info.value.gameLength +  info.value.championId + info.value.championsKill  + info.value.assists  + info.value.numDeaths + info.value.goldEarned  + info.value.minionsKilled  + info.value.level   + info.value.visionScore   +  info.value.win   + info.value.rank +  'LOLUID1FE7111E9FB0FBF7B13E338923FC2C32FG'
-  sign2.value = sign.value
-  // MD5加密
-  sign.value = CryptoJS.MD5(sign.value).toString()
-  api.post('/method/account/',{
-    method: 'SUBMIT_MATCH_DATA',
-    Type: info.value.gameType,
-    Tier: info.value.tier,
-    Server: info.value.server,
-    SummonerName:info.value.summonerName,
-    QueueId: info.value.queueId,
-    SummonerId: info.value.summonerId,
-    GameLength: info.value.gameLength ,
-    ChampionId: info.value.championId ,
-    ChampionsKilled: info.value.championsKill ,
-    Assists: info.value.assists ,
-    NumDeaths: info.value.numDeaths ,
-    GoldEarned: info.value.goldEarned ,
-    MinionsKilled: info.value.minionsKilled ,
-    Level: info.value.level ,
-    VisionScore: info.value.visionScore,
-    Win: info.value.win ,
-    Rank: info.value.rank ,
-    Sign: sign.value ,
-  }).then((res) => {
-      if (res.data.code == 10000) {
-        getIntegral()
-        return true
-    } else {
-        return res.data.message
-    }
-  })
-}
-// 游戏登录
-const gameLogin = (obj) => {
-  const data = JSON.stringify(obj);
-  info.value = JSON.parse(data)
-  sign.value = ''
-  sign.value = info.value.server + info.value.accountID + info.value.summonerId + 'LOLUID1FE7111E9FB0FBF7B13E338923FC2C32FG'
-  // MD5加密
+    sign.value = "";
+    sign2.value = "";
+    sign.value =
+      localStorage.getItem("numberToken") +
+      info.value.summonerId +
+      info.value.server +
+      info.value.tier +
+      info.value.queueId +
+      info.value.gameLength +
+      info.value.championId +
+      info.value.championsKill +
+      info.value.assists +
+      info.value.numDeaths +
+      info.value.goldEarned +
+      info.value.minionsKilled +
+      info.value.level +
+      info.value.visionScore +
+      info.value.win +
+      info.value.rank +
+      "LOLUID1FE7111E9FB0FBF7B13E338923FC2C32FG";
+    sign2.value = sign.value;
 
-  sign.value = CryptoJS.MD5(sign.value).toString()
+    // MD5加密cons
+    sign.value = CryptoJS.MD5(sign.value).toString();
 
-  api.post('/method/account/',{
-    method: 'GAME_USER_LOGIN',
-    Server: data.server,
-    AccountID: data.accountID,
-    SummonerId: data.summonerId,
-    SummonerName: data.summonerName,
-    Sign: sign.value
-  }).then(res => {
-    info.value = res
- //   if(res.data.code == 10000) {
- //     return true
-  //  } else {
-  //    return res.data.message
-  //  }
-  })
-}
-
-// 游戏登出
-const gameLogout = (obj) => {
-  // const data = JSON.parse(obj);
-  api.post('/method/account/').then(res => {
-//if(res.data.code == 10000) {
- //     return true
- //   } else {
- //     return res.data.message
- //   }
-  })
-}
+    const response = await api
+      .post("/method/account/", {
+        method: "SUBMIT_MATCH_DATA",
+        Type: info.value.gameType,
+        Tier: info.value.tier,
+        Server: info.value.server,
+        SummonerName: info.value.summonerName,
+        QueueId: info.value.queueId,
+        SummonerId: info.value.summonerId,
+        GameLength: info.value.gameLength,
+        ChampionId: info.value.championId,
+        ChampionsKilled: info.value.championsKill,
+        Assists: info.value.assists,
+        NumDeaths: info.value.numDeaths,
+        GoldEarned: info.value.goldEarned,
+        MinionsKilled: info.value.minionsKilled,
+        Level: info.value.level,
+        VisionScore: info.value.visionScore,
+        Win: info.value.win,
+        Rank: info.value.rank,
+        Sign: sign.value,
+      })
+      .then((res) => {
+        if (res.data.code == 10000) {
+          // getIntegral();
+          callback("true");
+        } else {
+          callback(res.data.message);
+        }
+      });
+  } catch (error) {
+    callback("error2");
+  } finally {
+    emits("childEvent");
+  }
+};
 
 // 最小化、关闭窗口
-const minimizeWindow  = (str) => {
-  console.log("mini button clicked");
- 
+const minimizeWindow = (str) => {
   if (window.client) {
     try {
       window.client.minimizeWindow(str);
-       if (str == 'exit') {
-          dialogVisible.value = false
-        }
+      if (str == "exit") {
+        dialogVisible.value = false;
+      }
     } catch (error) {
       console.error("Failed to call Java method or parse JSON:", error);
     }
   } else {
     console.log("Java bridge not found");
   }
-}
+};
 // 获取当前用户积分
 const getIntegral = () => {
-  api.post('/method/account/', {
-    method: 'GET_USER_INTEGRAL'
-  }).then(res => {
-    if (res.data.code = 10000) {
-      localStorage.setItem('myIntergral', res.data.result.number)
-      localStorage.setItem('matchCount', res.data.result.match_count)
-      localStorage.setItem('matchLevel', res.data.result.match_level)
-      myIntergral.value = localStorage.getItem('myIntergral')
-    }
-  })
-}
+  api
+    .post("/method/account/", {
+      method: "GET_USER_INTEGRAL",
+    })
+    .then((res) => {
+      if ((res.data.code = 10000)) {
+        localStorage.setItem("myIntergral", res.data.result.number);
+        localStorage.setItem("matchCount", res.data.result.match_count);
+        localStorage.setItem("matchLevel", res.data.result.match_level);
+        myIntergral.value = localStorage.getItem("myIntergral");
+      } else {
+        ElMessage.error("未登录吗？");
+      }
+    });
+};
 
 // 退出登录
 const toQuit = () => {
   // 退出登录
-  api.post('/method/account/', {
-    method: 'GAME_USER_LOGOUT',
-  }).then(res => {
-    if (res.data.code == 10000) {
-      ElMessage.success('退出成功')
-      Object.keys(Cookies.get()).forEach(name => {
-        Cookies.remove(name);
-      });
-      localStorage.clear()
-      router.replace('/login')
-    }
-  })
-}
+  api
+    .post("/method/account/", {
+      method: "GAME_USER_LOGOUT",
+    })
+    .then((res) => {
+      if (res.data.code == 10000) {
+        ElMessage.success("退出成功");
+        clearInterval(timer3.value);
+        Object.keys(Cookies.get()).forEach((name) => {
+          Cookies.remove(name);
+        });
+        localStorage.clear();
+        router.replace("/login");
+      }
+    });
+};
 // getIntergral()
-localStorage.getItem('loginStatus') && getIntegral()
+// localStorage.getItem("loginStatus") && getIntegral();
 </script>
 <style lang="scss" scoped>
 .nav-header {
   box-sizing: border-box;
   width: 100%;
-  padding: 10px 0;
-  background: rgba(0,0,0, .7);
+  background: rgba(0, 0, 0, 0.7);
   position: fixed;
   height: 99px;
   top: 0;
   left: 0;
   z-index: 5;
-  transition: all .2s;
+  transition: all 0.2s;
 }
 .menu {
   position: relative;
+  margin-left: 60px;
   .ewm {
-    background: rgba(0,0,0,.4);
+    background: rgba(0, 0, 0, 0.4);
     padding: 30px;
-      position: absolute;
-      left: 100%;
-      transform: translateX(-50%);
-      top: 61px;
-      display: none;
-    }
+    position: absolute;
+    left: 100%;
+    transform: translateX(-50%);
+    top: 61px;
+    display: none;
+  }
   a {
     color: #c5c5c5;
     margin: 0 20px;
@@ -334,11 +412,12 @@ localStorage.getItem('loginStatus') && getIntegral()
         display: block;
       }
     }
-  
-    &.on {
+
+    &.on,
+    &:hover {
       color: #ffb967;
       &:after {
-        content: '';
+        content: "";
         width: 175px;
         height: 102px;
         background: url(@/assets/currentIndex.png) no-repeat;
@@ -360,30 +439,71 @@ localStorage.getItem('loginStatus') && getIntegral()
   width: 73px;
   height: 79px;
   margin-right: 20px;
+  position: relative;
+  span {
+    color: #e2edff;
+    display: block;
+    width: 200px;
+    font-size: 12px;
+    margin-top: 5px;
+  }
 }
 .slogon {
   width: 269px;
   height: 29px;
-  
 }
 .personal-center {
   color: #fff;
   position: relative;
   height: 100%;
-  height: 79px;
+  height: 99px;
   display: flex;
   padding: 20px 0;
+  margin-right: 60px;
   box-sizing: border-box;
   .avatar {
-    width: 50px;
-    height: 50px;
+    width: 70px;
+    height: 70px;
+    position: relative;
     border-radius: 50%;
-    border: 1px solid rgb(255, 164, 35);
     overflow: hidden;
-    background: #fff;
     margin-right: 10px;
+    z-index: 6;
+    .inter {
+      width: 50px;
+      height: 50px;
+      background: rgba(0, 0, 0, 0.7);
+      color: #fff;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 50px;
+      display: none;
+      span {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        animation: toTop 1s;
+      }
+      &.show {
+        display: block;
+      }
+    }
     img {
       max-width: 100%;
+      width: 50px;
+      height: 50px;
+      position: absolute;
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1;
     }
   }
   h5 {
@@ -392,17 +512,17 @@ localStorage.getItem('loginStatus') && getIntegral()
   }
   p {
     font-size: 12px;
-    span{
-      color:#ffb967;
+    span {
+      color: #ffb967;
     }
   }
-  .drop-menu{
+  .drop-menu {
     padding: 10px 0;
     width: 100%;
     box-sizing: border-box;
     background: #36363a;
     position: absolute;
-    top: 90%;
+    top: 99%;
     left: 0;
     display: none;
     a {
@@ -420,15 +540,43 @@ localStorage.getItem('loginStatus') && getIntegral()
     display: block;
   }
 }
-:deep(.el-dialog) {
-  background: rgb(36, 36, 36);
+
+@keyframes toTop {
+  0% {
+    top: 50%;
+    opacity: 1;
+  }
+
+  100% {
+    top: 20%;
+    opacity: 0;
+  }
 }
-:deep(.el-dialog__title), 
+:deep(.el-dialog),
+:deep(.el-message-box) {
+  background: rgb(36, 36, 36) !important;
+  background-color: rgb(36, 36, 36) !important;
+}
+:deep(.el-dialog__title),
 :deep(.el-dialog__body) {
   color: #f5f5f5;
 }
-:deep(.el-button--primary) {
+:deep(.el-button--primary),
+:deep(.el-message-box__btns .el-button--primary) {
   background: #eb6b35;
   border-color: #eb6b35;
+}
+:deep(.el-progress__text) {
+  display: none;
+}
+:deep(.el-progress) {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+:deep(.el-progress-circle) {
+  width: 58px !important;
+  height: 58px !important;
 }
 </style>

@@ -1,223 +1,526 @@
 <template>
-  <div class="user">
+  <Header v-drag />
+  <div v-drag class="user">
     <div class="container">
-      <div class="flex space-between box" >
+      <div class="flex space-between box">
         <div class="left">
-          <div class="menu flex space-between">
-            <div class="tab text-center " v-for="(item,index) in tabs" :key="item" :class="{'on': currentIndex == index}" @click="switchTab(index)">{{ item }}</div>
+          <div class="tab-menu flex space-between">
+            <div
+              class="tab"
+              v-for="(item, index) in tabs"
+              :key="item"
+              :class="{ on: currentIndex == index }"
+              @click="switchTab(index)"
+            >
+              {{ item }}
+              <!-- <span style="font-size:12px;">(总{{ total }}条记录)</span> -->
+            </div>
           </div>
-          <el-table :data="table" style="width: 100%" align="center">
-            <el-table-column label="游戏类型" prop="name" >
-              <template #default="scope">
-                <div class="flex align-center " v-if="scope.row.Type == 0">
-                  <img src="../../assets/lol.png" alt="">
-                  <p>英雄联盟</p>
-                </div>
-                <div v-else> 
-                  <img src="../../assets/yjwj.png" alt="">
-                  <p>永劫无间</p>
-                </div>
-              </template>
-            </el-table-column>
-            <el-table-column label="召唤师名称" prop="SummonerName"  align="center"/>
-            <el-table-column label="所选英雄" prop="condition"  align="center">
-              <template #default="scope">
-                {{ scope.row.heroName}} - {{ scope.row.heroTitle }}
-              </template>
 
-              
-            </el-table-column>
-            <el-table-column label="击杀/死亡/助攻" prop="condition"  align="center">
-              <template #default="scope">
-                {{ scope.row.ChampionsKilled }} / {{ scope.row.NumDeaths }} / {{ scope.row.Assists }}
-              </template>
-            </el-table-column>
+          <div class="menu flex space-between" v-if="currentIndex == 0">
+            <div class="flex align-center">
+              <span class="filter">对局结果</span>
+              <el-radio-group v-model="win" @change="getMatchLog">
+                <el-radio-button label="全部" :value="-1" />
+                <el-radio-button label="胜利" :value="1" />
+                <el-radio-button label="失败" :value="0" />
+              </el-radio-group>
+              <span class="filter">筛选</span>
+              <el-date-picker
+                v-model="selectDate"
+                type="daterange"
+                range-separator="至"
+                start-placeholder="开始日期"
+                end-placeholder="结束日期"
+                @change="getTime"
+                clearable
+              />
+            </div>
+          </div>
+          <div v-if="currentIndex == 0">
+            <div v-if="currentIndex == 0 && table.length > 0">
+              <el-table
+                :data="table"
+                style="width: 100%"
+                align="center"
+                v-loading="loading"
+                element-loading-text="获取中，请稍等..."
+              >
+                <el-table-column label="游戏名称" prop="name">
+                  <template #default="scope">
+                    <div class="flex align-center" v-if="scope.row.Type == 0">
+                      <img src="../../assets/lol.png" alt="" />
+                      <p>英雄联盟</p>
+                    </div>
+                    <div class="flex align-center" v-else>
+                      <img src="../../assets/yjwj.png" alt="" />
+                      <p>永劫无间</p>
+                    </div>
+                  </template>
+                </el-table-column>
+                <el-table-column label="召唤师名称" prop="SummonerName" align="center" />
+                <el-table-column label="游戏模式" prop="condition" align="center">
+                  <template #default="scope">
+                    <span v-if="scope.row.QueueId == 430">召唤师峡谷自选</span>
+                    <span v-if="scope.row.QueueId == 420">召唤师峡谷单双排位</span>
+                    <span v-if="scope.row.QueueId == 440">召唤师峡谷灵活排位</span>
+                    <span v-if="scope.row.QueueId == 450">极地大乱斗</span>
+                    <span v-if="scope.row.QueueId == 1090">云顶匹配</span>
+                    <span v-if="scope.row.QueueId == 1100">云顶排位</span>
+                    <span v-if="scope.row.QueueId == 1130">云顶狂暴</span>
+                    <span v-if="scope.row.QueueId == 1160">云顶双人作战</span>
+                    <span v-if="scope.row.QueueId == 1210">云顶恭喜发财</span>
+                    <span v-if="scope.row.QueueId == 1700">斗魂竞技场</span>
+                    <span v-if="scope.row.QueueId == 5000000">生存天选单排</span>
+                    <span v-if="scope.row.QueueId == 5000200">生存天选双排</span>
+                    <span v-if="scope.row.QueueId == 5000001">生存天选三排</span>
+                    <span v-if="scope.row.QueueId == 5000004">生存天人单排</span>
+                    <span v-if="scope.row.QueueId == 5000202">生存天人双排</span>
+                    <span v-if="scope.row.QueueId == 5000005">生存天人三排</span>
+                    <span v-if="scope.row.QueueId == 5000006">生存快速单排</span>
+                    <span v-if="scope.row.QueueId == 5000011">生存快速双排</span>
+                    <span v-if="scope.row.QueueId == 5000007">生存快速三排</span>
+                    <span v-if="scope.row.QueueId == 5000015">娱乐暗域狂潮(8个队伍)</span>
+                    <span v-if="scope.row.QueueId == 5000070">娱乐无间幻境</span>
+                    <span v-if="scope.row.QueueId == 5000016">娱乐无尽枪火</span>
+                    <span v-if="scope.row.QueueId == 5000010">娱乐无尽试炼</span>
+                    <span v-if="scope.row.QueueId == 5000060">娱乐武道争锋</span>
+                    <span v-if="scope.row.QueueId == 5000600">娱乐地脉之战</span>
+                    <span v-if="scope.row.QueueId == 5000080">娱乐糖豆人</span>
+                    <span v-if="scope.row.QueueId == 5000400">娱乐共振联赛</span>
+                    <span v-if="scope.row.QueueId == 5000700">娱乐武道对决</span>
+                  </template>
+                </el-table-column>
+                <el-table-column label="游戏时长" prop="gameLength" align="center">
+                  <template #default="scope">
+                    {{ formatDuration(scope.row.GameLength) }}
+                  </template>
+                </el-table-column>
+                <!-- <el-table-column label="击杀/死亡/助攻" prop="condition"  align="center">
+                  <template #default="scope">
+                    {{ scope.row.ChampionsKilled }} / {{ scope.row.NumDeaths }} / {{ scope.row.Assists }}
+                  </template>
+                </el-table-column> -->
 
-            <el-table-column label="游戏结果" prop="condition"  align="center">
-              <template #default="scope">
-                <span v-if="scope.row.Win == 1" style="color: #58b4da">胜利</span>
-                <span v-else style="color: #e15151">失败</span>
+                <el-table-column label="游戏结果" prop="condition" align="center">
+                  <template #default="scope">
+                    <span v-if="scope.row.Win == 1" style="color: #58b4da"
+                      >完成<span v-if="scope.row.Rank != 0"
+                        >(第{{ scope.row.Rank }}名)</span
+                      ></span
+                    >
+                    <span
+                      v-if="scope.row.Win == 0 && scope.row.Rank == 0"
+                      style="color: #e15151"
+                      >未完成</span
+                    >
+                    <span
+                      v-if="scope.row.Win == 0 && scope.row.Rank != 0"
+                      style="color: #e15151"
+                      >未完成(第{{ scope.row.Rank }}名)</span
+                    >
+                  </template>
+                </el-table-column>
+                <el-table-column label="时间" prop="LogDate" align="center" />
+                <!-- <el-table-column label="领取状态" prop="status"  align="center">
+                  <template #default="scope">
+                    <el-tag effect="dark" type="info">已发放</el-tag>
+                  </template>
+                </el-table-column> -->
+              </el-table>
+              <div class="text-center flex space-center align-center">
+                <el-pagination
+                  background
+                  layout="prev, pager, next, total"
+                  :total="total"
+                  :page-size="pageSize"
+                  @current-change="currentChange"
+                />
+                <el-button
+                  style="margin-top: 20px; margin-left: 20px"
+                  @click="getMatchLog"
+                  alt="刷新"
+                  ><el-icon><RefreshRight /></el-icon
+                ></el-button>
+              </div>
+            </div>
+            <el-empty description="暂无记录" v-else />
+          </div>
+          <div v-if="currentIndex == 1">
+            <div v-if="currentIndex == 1 && table.length > 0">
+              <el-table
+                :data="table"
+                style="width: 100%"
+                align="center"
+                v-loading="loading"
+                element-loading-text="获取中，请稍等..."
+              >
+                <el-table-column label="变动类型" prop="transDate" align="center">
+                  <template #default="scope">
+                    <p
+                      style="color: #e15151"
+                      v-if="scope.row.remark == '外星人高端玩家联盟-关卡挑战'"
+                    >
+                      消耗积分
+                    </p>
+                    <p style="color: #6ee151" v-else>获得积分</p>
+                  </template>
+                </el-table-column>
 
-              </template>
-            </el-table-column>
-            <!-- <el-table-column label="领取状态" prop="status"  align="center">
-              <template #default="scope">
-                <el-tag effect="dark" type="info">已发放</el-tag>
-              </template>
-            </el-table-column> -->
-          </el-table>
-          <div class="text-center">
-              <el-pagination background  layout="prev, pager, next" :total="total" @current-change="currentChange"/>
+                <el-table-column label="积分" prop="name" align="center">
+                  <template #default="scope">
+                    <div class="flex align-center space-center">
+                      <img style="width: 50px" src="../../assets/coin.png" alt="" />
+                      <p><span></span>{{ scope.row.variationRange }}积分</p>
+                    </div>
+                  </template>
+                </el-table-column>
+                <el-table-column label="剩余积分" prop="amount" align="center" />
+
+                <el-table-column
+                  label="完成条件"
+                  prop="remark"
+                  width="250"
+                  align="center"
+                  show-overflow-tooltip="true"
+                >
+                </el-table-column>
+                <el-table-column label="获得时间" prop="transDate" align="center" />
+              </el-table>
+              <div class="text-center flex space-center align-center">
+                <el-pagination
+                  background
+                  :page-size="pageSize2"
+                  layout="prev, pager, next, total"
+                  :total="total"
+                  @current-change="currentChange"
+                />
+                <el-button
+                  style="margin-top: 20px; margin-left: 20px"
+                  @click="getInteraLog"
+                  alt="刷新"
+                  ><el-icon><RefreshRight /></el-icon
+                ></el-button>
+              </div>
+            </div>
+            <el-empty description="暂无记录" v-else />
+          </div>
+          <div v-if="currentIndex == 2">
+            <div v-if="currentIndex == 2 && table.length > 0">
+              <el-table
+                :data="table"
+                style="width: 100%"
+                align="center"
+                v-loading="loading"
+                element-loading-text="获取中，请稍等..."
+              >
+                <el-table-column label="获得现金" prop="name" align="center">
+                  <template #default="scope">
+                    <div class="flex align-center space-center">
+                      <img style="width: 30px" src="../../assets/rebbag.png" alt="" />
+                      <p>{{ scope.row.Number / 100 }}元</p>
+                    </div>
+                  </template>
+                </el-table-column>
+                <el-table-column label="完成条件" prop="condition" align="center">
+                  <template #default="scope">
+                    <p>完成第{{ scope.row.Level }}关获得</p>
+                  </template>
+                </el-table-column>
+                <el-table-column label="获得时间" prop="LogDate" align="center" />
+              </el-table>
+              <div class="text-center flex space-center align-center">
+                <el-pagination
+                  background
+                  :page-size="pageSize3"
+                  layout="prev, pager, next, total"
+                  :total="total"
+                  @current-change="currentChange"
+                />
+                <el-button
+                  style="margin-top: 20px; margin-left: 20px"
+                  @click="getCashLog"
+                  alt="刷新"
+                  ><el-icon><RefreshRight /></el-icon
+                ></el-button>
+              </div>
+            </div>
+            <el-empty description="暂无记录" v-else />
           </div>
         </div>
         <div class="right">
           <div class="top-part">
             <div class="top">
-              <div class="count"><span>{{myIntergral}}</span>积分</div>
+              <div class="count">
+                <span>{{ myIntergral }}</span
+                >积分
+              </div>
               <p>当前积分</p>
             </div>
             <div class="bottom">
               <div class="flex space-around">
                 <div>
                   <div>比赛总场次</div>
-                  <p><span>{{myMatchCount}}</span>场</p>
+                  <p>
+                    <span>{{ myMatchCount }}</span
+                    >场
+                  </p>
                 </div>
                 <div>
                   <div>现金赛总场次</div>
-                  <p><span>{{myMatchLevel}}</span>场</p>
+                  <p>
+                    <span>{{ myMatchLevel }}</span
+                    >场
+                  </p>
                 </div>
               </div>
             </div>
           </div>
           <div class="service">
-            <img src="../../assets/login-ewm.png" alt="">
+            <img src="../../assets/login-ewm.png" alt="" />
             <p>扫一扫联系客服</p>
           </div>
         </div>
       </div>
     </div>
-    <GiftDialog :detail="currentGift" v-if="showGiftDialog"  @continueTasks="showGiftDialog = false"/>
-
+    <GiftDialog
+      :detail="currentGift"
+      v-if="showGiftDialog"
+      @continueTasks="showGiftDialog = false"
+    />
   </div>
 </template>
 <script setup>
-import { onMounted, ref ,  watch } from 'vue'
-import { useRouter, useRoute } from 'vue-router';
-import GiftDialog from '../gift/components/gift-dialog.vue';
-import heroInfo from './hero.json'
+import { onMounted, ref, watch } from "vue";
+import Header from "@/components/header.vue";
+import { RefreshRight } from "@element-plus/icons-vue";
 
-import api from '../../api/request'
+import { useRouter, useRoute } from "vue-router";
+import GiftDialog from "../gift/components/gift-dialog.vue";
+import heroInfo from "./hero.json";
+
+import api from "../../api/request";
 const router = useRouter();
+const startTime = ref("");
+const endTime = ref("");
+const win = ref(-1);
+const loading = ref(true);
 const route = useRoute();
-const currentIndex = ref(0)
-const currentGift = ref({})
-const showGiftDialog = ref(false)
-const myIntergral = ref(localStorage.getItem('myIntergral'))
-const myMatchCount = ref(localStorage.getItem('matchCount'))
-const myMatchLevel = ref(localStorage.getItem('matchLevel'))
-const championByIdCache = ref({})
-const championJson = ref({})
-const infos = ref(false)
-const total = ref(0)
-const pageSize = ref(7)
-const currentPage = ref(1)
+const currentIndex = ref(0);
+const currentGift = ref({});
+const showGiftDialog = ref(false);
+const myIntergral = ref(localStorage.getItem("myIntergral"));
+const myMatchCount = ref(localStorage.getItem("matchCount"));
+const myMatchLevel = ref(localStorage.getItem("matchLevel"));
+const championByIdCache = ref({});
+const championJson = ref({});
+const infos = ref(false);
+const selectDate = ref([]);
+const total = ref(0);
+const pageSize = ref(6);
+const pageSize2 = ref(8);
+const pageSize3 = ref(6);
 
-const tabs = ref(['游戏记录'])
-const table = ref([])
-onMounted (() => {
-  console.log(route, ' route')
-})
+const currentPage = ref(1);
+
+const tabs = ref(["游戏记录", "积分记录", "现金记录"]);
+const table = ref([]);
+onMounted(() => {
+  console.log(route, " route");
+});
 watch(
   () => route.hash,
   (hash) => {
     console.log(hash);
 
-    isCurrentPath(hash)
+    isCurrentPath(hash);
   }
 );
+
+const formatDuration = (seconds) => {
+  let hours = Math.floor(seconds / 3600);
+  let minutes = Math.floor((seconds % 3600) / 60);
+  let remainingSeconds = seconds % 60;
+
+  let duration = "";
+  if (hours > 0) {
+    duration += hours + "小时 ";
+  }
+  if (minutes > 0) {
+    duration += minutes + "分钟 ";
+  }
+  if (remainingSeconds > 0) {
+    duration += remainingSeconds + "秒";
+  }
+
+  return duration.trim();
+};
 const giftDialogShow = (item) => {
-  showGiftDialog.value = true
-  currentGift.value = item
-}
+  showGiftDialog.value = true;
+  currentGift.value = item;
+};
 const isCurrentPath = (path) => {
   switch (path) {
-    case '#match':
-      currentIndex.value = 0
+    case "#match":
+      currentIndex.value = 0;
       break;
-    case '#cash':
-      currentIndex.value = 1
+    case "#cash":
+      currentIndex.value = 1;
       break;
-    case '#gift':
-      currentIndex.value = 2
+    case "#gift":
+      currentIndex.value = 2;
       break;
-    default: 
-    currentIndex.value = 3
-
+    default:
+      currentIndex.value = 3;
   }
-}
+};
 const switchTab = (index) => {
-  currentIndex.value = index
-}
+  currentIndex.value = index;
+  currentPage.value = 1;
+  if (index == 0) {
+    getMatchLog();
+  } else if (index == 1) {
+    getInteraLog();
+  } else {
+    getCashLog();
+  }
+};
 
+const getTime = (v) => {
+  if (v != null) {
+    startTime.value = v[0] + "00:00:00";
+    endTime.value = v[1] + "23:59:59";
+  } else {
+    startTime.value = "";
+    endTime.value = "";
+  }
+  getMatchLog();
+};
 const currentChange = (v) => {
-  currentPage.value = v
-  getMatchLog()
-}
+  currentPage.value = v;
+  if (currentIndex.value == 0) {
+    getMatchLog();
+  } else if (currentIndex.value == 1) {
+    getInteraLog();
+  } else {
+    getCashLog();
+  }
+};
 // 获取比赛记录
 const getMatchLog = () => {
-  api.post('/method/account/', {
-   method: 'GET_MATCH_LOG',
-   page: currentPage.value,
-    limit: pageSize.value
- }).then(res => {
-   table.value = res.data.result.data
-   total.value = res.data.result.count
+  loading.value = true;
 
-   table.value.map(item => {
-    heroInfo.map(jtem => {
-      if (item.ChampionId == jtem.key) {
-        item.heroTitle = jtem.title
-        item.heroName = jtem.name
-      }
+  api
+    .post("/method/account/", {
+      method: "GET_MATCH_LOG",
+      page: currentPage.value,
+      limit: pageSize.value,
+      startTime: startTime.value,
+      endTime: endTime.value,
+      win: win.value,
     })
-   })
-   console.log( table.value)
- })
-}
+    .then((res) => {
+      table.value = res.data.result.data;
+      total.value = res.data.result.count;
+      table.value.map((item) => {
+        heroInfo.map((jtem) => {
+          if (item.ChampionId == jtem.key) {
+            item.heroTitle = jtem.title;
+            item.heroName = jtem.name;
+          }
+        });
+      });
+      loading.value = false;
+      console.log(table.value);
+    });
+};
+// 获取积分记录
+const getInteraLog = () => {
+  loading.value = true;
 
-getMatchLog()
+  api
+    .post("/method/account/", {
+      method: "GET_POINT_LOG",
+      page: currentPage.value,
+      size: pageSize2.value,
+    })
+    .then((res) => {
+      table.value = res.data.result.dataList;
+      total.value = res.data.result.totalCount;
+      loading.value = false;
 
+      console.log(table.value);
+    });
+};
 
-const  getLatestChampionDDragon = async (language = "en_US") => {
+// 获取现金奖励记录
+const getCashLog = () => {
+  loading.value = true;
+  api
+    .post("/method/account/", {
+      method: "GET_STAGE_LOG",
+      page: currentPage.value,
+      size: pageSize3.value,
+    })
+    .then((res) => {
+      table.value = res.data.result.data;
+      total.value = res.data.result.count;
+      loading.value = false;
+    });
+};
+getMatchLog();
 
-	if (championJson[language])
-		return championJson[language];
+const getLatestChampionDDragon = async (language = "en_US") => {
+  if (championJson[language]) return championJson[language];
 
-	let response;
-	let versionIndex = 0;
-	do { // I loop over versions because 9.22.1 is broken
-		const version = (await fetch("http://ddragon.leagueoflegends.com/api/versions.json").then(async(r) => await r.json()))[versionIndex++];
-	
-		response = await fetch(`https://ddragon.leagueoflegends.com/cdn/${version}/data/${language}/champion.json`);
-	}
-	while (!response.ok)
-	
-	championJson[language] = await response.json();
-	return championJson[language];
-}
+  let response;
+  let versionIndex = 0;
+  do {
+    // I loop over versions because 9.22.1 is broken
+    const version = (
+      await fetch("http://ddragon.leagueoflegends.com/api/versions.json").then(
+        async (r) => await r.json()
+      )
+    )[versionIndex++];
 
- const  getChampionByKey = async (key, language = "zh_CN") => {
+    response = await fetch(
+      `https://ddragon.leagueoflegends.com/cdn/${version}/data/${language}/champion.json`
+    );
+  } while (!response.ok);
 
-	// Setup cache
-	if (!championByIdCache[language]) {
-		let json = await getLatestChampionDDragon(language);
+  championJson[language] = await response.json();
+  return championJson[language];
+};
 
-		championByIdCache[language] = {};
-		for (var championName in json.data) {
-			if (!json.data.hasOwnProperty(championName))
-				continue;
+const getChampionByKey = async (key, language = "zh_CN") => {
+  // Setup cache
+  if (!championByIdCache[language]) {
+    let json = await getLatestChampionDDragon(language);
 
-			const champInfo = json.data[championName];
-			championByIdCache[language][champInfo.key] = champInfo;
-		}
-	}
+    championByIdCache[language] = {};
+    for (var championName in json.data) {
+      if (!json.data.hasOwnProperty(championName)) continue;
 
-	return championByIdCache[language][key];
-}
+      const champInfo = json.data[championName];
+      championByIdCache[language][champInfo.key] = champInfo;
+    }
+  }
+
+  return championByIdCache[language][key];
+};
 
 // NOTE: IN DDRAGON THE ID IS THE CLEAN NAME!!! It's also super-inconsistent, and broken at times.
 // Cho'gath => Chogath, Wukong => Monkeyking, Fiddlesticks => Fiddlesticks/FiddleSticks (depending on what mood DDragon is in this patch)
- const  getChampionByID =  async (name, language = "zh_CN") => {
-	return await getLatestChampionDDragon(language)[name];
-}
+const getChampionByID = async (name, language = "zh_CN") => {
+  return await getLatestChampionDDragon(language)[name];
+};
 
- const main = async (id) => {
-	const info = await getChampionByKey(id, "zh_CN");
-  console.log(info)
-  infos.value = true
-	return info
-}
-
+const main = async (id) => {
+  const info = await getChampionByKey(id, "zh_CN");
+  console.log(info);
+  infos.value = true;
+  return info;
+};
 </script>
 <style lang="scss" scoped>
 .user {
@@ -229,24 +532,43 @@ const  getLatestChampionDDragon = async (language = "en_US") => {
   background-repeat: no-repeat;
   padding-top: 99px;
   box-sizing: border-box;
+  .el-radio-group {
+    width: 200px;
+  }
   .box {
     height: 100%;
   }
   .left {
     width: 74%;
+    margin-top: 20px;
+    .tab-menu {
+      margin-bottom: 10px;
+    }
+    .tab {
+      width: 33.3%;
+      padding: 20px 0;
+      font-weight: bold;
+      box-sizing: border-box;
+      color: #c4c4c4;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.9);
+      cursor: pointer;
+      &.on {
+        color: #333;
+        background: linear-gradient(to right, #ffd44a, #ff8a0a);
+      }
+    }
     .menu {
-      padding-top: 20px;
-      padding-bottom: 5px;
-      .tab {
-        width: 100%;
-        background: rgba(243, 231, 255, .5);
-        padding: 10px 0;
-        cursor: pointer;
-        font-weight: bold;
-        color: #c4c4c4;
-        &.on {
-          color: #333;
-        }
+      background: rgba(243, 231, 255, 0.5);
+      padding: 10px;
+      margin-bottom: 10px;
+      .filter {
+        display: block;
+        min-width: 50px;
+        color: #e5e5e5;
+        margin-right: 5px;
+        text-align: right;
+        font-size: 12px;
       }
     }
     :deep(.el-table tr),
@@ -254,12 +576,12 @@ const  getLatestChampionDDragon = async (language = "en_US") => {
       background: transparent;
     }
     :deep(.el-table th.el-table__cell) {
-      background: rgba(0,0,0,.4);
-      border-bottom-color: rgba(255,255,255,.2);
+      background: rgba(0, 0, 0, 0.4);
+      border-bottom-color: rgba(255, 255, 255, 0.2);
     }
     :deep(.el-table td.el-table__cell) {
-      background: rgba(0,0,0,.2);
-      border-bottom-color: rgba(255,255,255,.3);
+      background: rgba(0, 0, 0, 0.2);
+      border-bottom-color: rgba(255, 255, 255, 0.3);
       color: #fff;
     }
     :deep(.el-table__inner-wrapper:before) {
@@ -278,11 +600,12 @@ const  getLatestChampionDDragon = async (language = "en_US") => {
       justify-content: center;
       margin-top: 20px;
     }
-    :deep(.el-pagination.is-background .btn-next.is-active, .el-pagination.is-background .el-pager li.is-active) ,
-      :deep(.el-pagination.is-background .btn-prev.is-active),
-      :deep(.el-pagination.is-background .el-pager li.is-active){
-
-      background: #ffb967;
+    :deep(.el-pagination.is-background .btn-next.is-active, .el-pagination.is-background
+        .el-pager
+        li.is-active),
+    :deep(.el-pagination.is-background .btn-prev.is-active),
+    :deep(.el-pagination.is-background .el-pager li.is-active) {
+      background: #e07e00;
     }
     :deep(.el-tag--dark.el-tag--success) {
       background: #2dca6f;
@@ -295,10 +618,10 @@ const  getLatestChampionDDragon = async (language = "en_US") => {
     justify-content: space-between;
     margin-top: 20px;
     .top-part {
-      background: rgba(0,0,0,.2);
+      background: rgba(0, 0, 0, 0.2);
     }
     .top {
-      background:  url(../../assets/personal-bj.png) no-repeat right top;
+      background: url(../../assets/personal-bj.png) no-repeat right top;
       padding-bottom: 90px;
       background-size: cover;
       .count {
@@ -333,7 +656,7 @@ const  getLatestChampionDDragon = async (language = "en_US") => {
       }
     }
     .service {
-      background: rgba(0,0,0,.2);
+      background: rgba(0, 0, 0, 0.2);
       padding: 25px 20px;
       margin-top: 20px;
       text-align: center;
@@ -349,5 +672,12 @@ const  getLatestChampionDDragon = async (language = "en_US") => {
       }
     }
   }
+}
+:deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
+  background: #e07e00;
+  border-color: #e07e00;
+}
+:deep(.el-pagination__total) {
+  color: #fff;
 }
 </style>
