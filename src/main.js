@@ -35,12 +35,12 @@ const customDirective = {
       }
     });
 
-    el.addEventListener('mouseleave', () => {
-      if (isDragging) {
-        isDragging = false;
-        window.client.invoke(JSON.stringify({type: 'end'}));
-      }
-    });
+    // el.addEventListener('mouseleave', () => {
+    //   if (isDragging) {
+    //     isDragging = false;
+    //     window.client.invoke(JSON.stringify({type: 'end'}));
+    //   }
+    // });
   }
 };
 

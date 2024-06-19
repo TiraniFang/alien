@@ -1,5 +1,5 @@
 <template>
-  <div class="login" v-drag>
+  <div v-drag class="login">
     <!-- <video loop autoplay ref="video" @loadedmetadata="playVideo" muted="true">
       <source src="../../assets/yjwj.mp4" type="video/mp4" />
     </video> -->
@@ -9,7 +9,7 @@
       <img src="../../assets/login-title.png" />
       <span style="color: #666">{{ info2 + ".1" }}</span>
     </div>
-    <div class="login-panel">
+    <div class="login-panel" v-if="isConfirm">
       <img class="s-title" src="../../assets/login-st.png" alt="" />
       <img src="../../assets/s-line.png" alt="" class="line" />
 
@@ -25,6 +25,37 @@
         </ul>
       </div>-->
     </div>
+    <div class="containers" ref="containers">
+      <!-- 这里放置你的超长内容 -->
+      <div class="content" v-for="(item, index) in maxNumber" :key="item">
+        <div class="box">
+          <div
+            class="current"
+            v-if="
+              currentIndex == passList[passList.length - 1] && passList.includes(item)
+            "
+          ></div>
+          <div class="line" v-if="passList.includes(item)"></div>
+          <div
+            class="item"
+            :class="{
+              pass: passList.includes(item),
+              ani: currentIndex == item,
+            }"
+          >
+            <!-- 'current': item.currentGuan && currentIndex == index -->
+            <div class="redbag">
+              <img src="../../assets/rebbag2.png" alt="" />
+              <span>969.6</span>
+              <img class="arrow" src="../../assets/arrow.png" alt="" />
+            </div>
+            <h3>关卡</h3>
+            <h2>{{ item }}</h2>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="confirm" :class="{ hide: isConfirm }" @click="confirm">登录拿现金！</div>
     <el-dialog v-model="dialogVisible" title="关闭窗口" width="500">
       <span>确认关闭程序吗？</span>
       <template #footer>
@@ -53,18 +84,18 @@ import { useRouter } from "vue-router";
 const video = ref(null);
 const dialogGameVisible = ref(false);
 const message = ref("");
-
+const isConfirm = ref(false);
 const dialogVisible = ref(false);
 const router = useRouter();
-const sign = ref("");
-const sign2 = ref("");
-
 const loginEwm = ref("");
 const timer = ref(null);
 const info = ref(null);
 const info2 = ref(null);
-
 const timer2 = ref(null);
+const maxNumber = ref([603, 604, 605, 606, 607, 608, 609]);
+const passList = ref([603, 604, 605, 606]);
+const currentIndex = ref(606);
+const allNumArray = ref([100, 200, 300, 400, 500, 600, 700]);
 onMounted(async () => {
   if (window.client) {
     window.handleMatchData = handleMatchData;
@@ -140,43 +171,20 @@ const minimizeWindow = (str) => {
     console.log("Java bridge not found");
   }
 };
-// 获取我的网吧id 和名称
-
-// const getMyNetInfo = async () => {
-//   try {
-//     const response = await axios.get('/api');
-//     let responseData = response.data;
-//     // 修复不合法的 JSON 字符串，将 result 字段中的内容进行转义
-//     responseData = responseData.replace('"{', '{').replace('}"', '}');
-
-//     let data;
-//     try {
-//       // 解析修复后的数据
-//       data = JSON.parse(responseData);
-//       console.log(data)
-//       localStorage.setItem('netBarName', data.result.name)
-//     } catch (e) {
-//       return;
-//     }
-
-//   } catch (error) {
-//     console.error('Axios Error:', error);
-//   }
-// };
 
 // 一：客户端信息获取
 const getClientInfo = () => {
   api
     .post("/method/client/", {
       method: "GET_CLIENT_INFO",
-      // id: 23,
-      // name: "kamisama",
-      // mac: "08-97-98-96-50-A0",
-      // sign: "f0214886c1c4604f6d96c0c9719de233",
-      id: info.value.id,
-      name: info.value.name,
-      mac: info.value.mac,
-      sign: info.value.sign,
+      id: 23,
+      name: "kamisama",
+      mac: "08-97-98-96-50-A0",
+      sign: "f0214886c1c4604f6d96c0c9719de233",
+      // id: info.value.id,
+      // name: info.value.name,
+      // mac: info.value.mac,
+      // sign: info.value.sign,
     })
     .then((res) => {
       console.log(res);
@@ -283,16 +291,24 @@ onBeforeUnmount(() => {
 });
 // getMyNetInfo()
 // gameLogout();
-// getClientInfo();
-callJavaMethod();
-getClientVersion();
+
+const confirm = () => {
+  isConfirm.value = true;
+  getClientInfo();
+  // callJavaMethod();
+  getClientVersion();
+};
 </script>
 <style lang="scss" scoped>
 .login {
   width: 100%;
   height: 100%;
-  background: url(../../assets/login-bj2.jpg) no-repeat center;
+  // background: url(../../assets/login-bj2.jpg) no-repeat center;
+  // background-size: cover;
+  background: url(../../assets/match_bj.jpg) no-repeat center bottom;
   background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
   position: relative;
   video {
     width: 100%;
@@ -324,6 +340,7 @@ getClientVersion();
     height: 443px;
     background: url(../../assets/login-sbj.png) no-repeat center;
     text-align: center;
+    z-index: 6;
     .s-title {
       width: 184px;
       height: 28px;
@@ -350,5 +367,256 @@ getClientVersion();
 :deep(.el-button--primary) {
   background: #eb6b35;
   border-color: #eb6b35;
+}
+.confirm {
+  width: 248px;
+  height: 68px;
+  line-height: 68px;
+  border-color: transparent;
+  background: linear-gradient(to right, #ffd44a, #ff8a0a);
+  border-radius: 4px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+  color: #573303;
+  margin-top: 50px;
+  position: fixed;
+  left: 50%;
+  margin-left: -124px;
+  bottom: 100px;
+  cursor: pointer;
+  &.hide {
+    display: none;
+  }
+}
+.containers {
+  overflow-x: hidden;
+  overflow-y: auto;
+  white-space: nowrap;
+  padding-top: 320px;
+  padding-bottom: 20px;
+  position: relative;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+.content {
+  display: inline-block;
+  white-space: normal;
+  height: 280px;
+  width: 220px;
+  &:nth-child(4n) .item .redbag {
+    display: block;
+  }
+  .box {
+    height: 100%;
+    width: 100%;
+    position: relative;
+  }
+  &:nth-child(odd) {
+    .box {
+      .item,
+      .current {
+        right: 50%;
+        top: 0;
+        transform: translateX(-50%);
+      }
+      .line {
+        content: "";
+        width: 1px;
+        height: 66%;
+        position: absolute;
+        right: 30%;
+        top: 33px;
+        transform: rotate(-56deg);
+        background: #818181;
+      }
+    }
+  }
+  &:nth-child(even) {
+    .box {
+      .line {
+        content: "";
+        width: 1px;
+        height: 65%;
+        position: absolute;
+        right: 30%;
+        top: 34px;
+        transform: rotate(56deg);
+        background: #818181;
+        opacity: 0.6;
+      }
+      .item,
+      .current {
+        right: 50%;
+        bottom: 0;
+        transform: translateX(-50%);
+      }
+    }
+  }
+
+  .item {
+    width: 67px;
+    height: 104px;
+    background: url(../../assets/gq-unfinish.png) no-repeat;
+    background-size: contain;
+    position: absolute;
+    color: #919191;
+    text-align: center;
+    z-index: 1;
+
+    .redbag {
+      position: absolute;
+      top: -126px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      display: none;
+      .arrow {
+        width: 20px;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        top: 99%;
+        animation: toTop 1s infinite;
+      }
+      img {
+        margin-right: 0;
+        width: 70px;
+      }
+      span {
+        font-size: 18px;
+        font-weight: bold;
+        color: #ffdfbc;
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+    }
+
+    h3 {
+      margin: 0;
+      margin-top: 5px;
+    }
+    h2 {
+      margin: 0;
+      margin-top: 3px;
+      font-size: 30px;
+    }
+    &::before {
+      content: "";
+      width: 25px;
+      height: 10px;
+      background: #8d9195;
+      position: absolute;
+      bottom: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-radius: 50%;
+    }
+    &::after {
+      content: "";
+      width: 35px;
+      height: 17px;
+      border: 1px solid #8d9195;
+      position: absolute;
+      bottom: -25px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-radius: 50%;
+    }
+    &.pass {
+      background: url(../../assets/gq-finished.png) no-repeat;
+      color: #cce7ff;
+      background-size: contain;
+      h3 {
+        color: #e9c787;
+      }
+      h2 {
+        color: #fdfff3;
+      }
+      &::before {
+        background: #ffd375;
+      }
+      &::after {
+        border-color: #ffd375;
+      }
+    }
+    &.ani {
+      opacity: 1;
+      background: url(../../assets/gq-select.png) no-repeat;
+      background-size: contain;
+      &::after {
+        border-width: 2px;
+      }
+      &::before {
+        animation: beforeAni 1.5s infinite;
+      }
+      &::after {
+        animation: afterAni 1.5s 0.1s infinite;
+      }
+    }
+  }
+  .current {
+    width: 67px;
+    height: 104px;
+    position: absolute;
+    // background: url(../../assets/gq-finished.png) no-repeat;
+    // filter: blur(20px);
+    color: #d8edff;
+    z-index: 0;
+  }
+}
+
+@keyframes beforeAni {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 1;
+  }
+  50% {
+    width: 25px;
+    height: 10px;
+    opacity: 1;
+  }
+  100% {
+    width: 0;
+    height: 0;
+    opacity: 0;
+  }
+}
+@keyframes afterAni {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 1;
+    bottom: -20px;
+  }
+  50% {
+    width: 35px;
+    height: 17px;
+    bottom: -25px;
+  }
+  100% {
+    width: 0;
+    height: 0;
+    opacity: 0;
+    bottom: -20px;
+  }
+}
+
+@keyframes toTop {
+  0% {
+    top: 100%;
+    opacity: 1;
+  }
+  50% {
+    top: 90%;
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 1;
+  }
 }
 </style>
