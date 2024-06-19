@@ -1,96 +1,99 @@
 <template>
   <div>
-    <div class="nav-header">
-      <div class="min" @click="minimizeWindow('min')"></div>
-      <div class="close" @click="minimizeWindow('min')"></div>
-      <div class="container" style="height: auto">
-        <div class="flex space-between align-center">
-          <div class="logo flex align-center">
-            <img class="logo" src="../assets/logo.png" alt="" />
-            <div>
-              <img class="slogon" src="../assets/slogon.png" alt="" />
-              <span>{{ netBarName }}欢迎您~</span>
-            </div>
-          </div>
-          <div class="menu flex align-center">
-            <router-link
-              v-for="(item, index) in menus"
-              :key="item.text"
-              :class="{ on: currentIndex == index }"
-              :to="item.path"
-              v-on:click.prevent
-            >
-              <div class="flex align-center">
-                <img
-                  class="icon"
-                  v-if="currentIndex == index"
-                  :src="item.activeIcon"
-                  alt=""
-                />
-                <img class="icon" v-else :src="item.icon" alt="" />
-                <span>{{ item.text }}</span>
-              </div>
-              <!-- <div class="ewm" v-if="index == menus.length -1">
-                <img src="../assets/login-ewm.png" alt="">
-              </div> -->
-            </router-link>
-          </div>
-
-          <div class="personal-center">
-            <div class="flex align-center">
-              <div class="avatar">
-                <el-progress
-                  type="circle"
-                  :percentage="percentage"
-                  status="exception"
-                  :stroke-width="10"
-                ></el-progress>
-                <p class="inter" :class="{ show: showAddInter }"><span>+10</span></p>
-                <img src="../assets/logo.jpg" alt="" />
-              </div>
+    <keep-alive>
+      <div class="nav-header">
+        <div class="min" @click="minimizeWindow('min')"></div>
+        <div class="close" @click="minimizeWindow('min')"></div>
+        <div class="container" style="height: auto">
+          <div class="flex space-between align-center">
+            <div class="logo flex align-center">
+              <img class="logo" src="../assets/logo.png" alt="" />
               <div>
-                <h5>外星人用户</h5>
-                <!-- <p style="margin-bottom: 5px">
-                  <el-tooltip
-                    class="box-item"
-                    effect="light"
-                    :content="'在线满一小时加10积分，当前进度' + percentage + '%'"
-                    placement="top"
-                  >
-                    <el-progress
-                      :percentage="percentage"
-                      :stroke-width="5"
-                      status="warning"
-                      striped
-                      striped-flow
-                    />
-                  </el-tooltip>
-                </p> -->
-                <p>
-                  当前积分：<span>{{ myIntergral }}</span>
-                </p>
+                <img class="slogon" src="../assets/slogon.png" alt="" />
+                <span>{{ netBarName }}欢迎您~</span>
               </div>
             </div>
-            <div class="drop-menu">
-              <router-link to="/user">个人中心</router-link>
-              <!-- <router-link to="/user#cash" >游戏记录</router-link> -->
-              <a href="javascript:;" @click="dialogVisible = true">退出登录</a>
+            <div class="menu flex align-center">
+              <router-link
+                v-for="(item, index) in menus"
+                :key="item.text"
+                :class="{ on: currentIndex == index }"
+                :to="item.path"
+                v-on:click.prevent
+              >
+                <div class="flex align-center">
+                  <img
+                    class="icon"
+                    v-if="currentIndex == index"
+                    :src="item.activeIcon"
+                    alt=""
+                  />
+                  <img class="icon" v-else :src="item.icon" alt="" />
+                  <span>{{ item.text }}</span>
+                </div>
+                <!-- <div class="ewm" v-if="index == menus.length -1">
+                  <img src="../assets/login-ewm.png" alt="">
+                </div> -->
+              </router-link>
+            </div>
+
+            <div class="personal-center">
+              <div class="flex align-center">
+                <div class="avatar">
+                  <el-progress
+                    type="circle"
+                    :percentage="percentage"
+                    status="exception"
+                    :stroke-width="10"
+                  ></el-progress>
+                  <p class="inter" :class="{ show: showAddInter }"><span>+10</span></p>
+                  <img src="../assets/logo.jpg" alt="" />
+                </div>
+                <div>
+                  <h5>外星人用户</h5>
+                  <!-- <p style="margin-bottom: 5px">
+                    <el-tooltip
+                      class="box-item"
+                      effect="light"
+                      :content="'在线满一小时加10积分，当前进度' + percentage + '%'"
+                      placement="top"
+                    >
+                      <el-progress
+                        :percentage="percentage"
+                        :stroke-width="5"
+                        status="warning"
+                        striped
+                        striped-flow
+                      />
+                    </el-tooltip>
+                  </p> -->
+                  <p>
+                    当前积分：<span>{{ myIntergral }}</span>
+                  </p>
+                </div>
+              </div>
+              <div class="drop-menu">
+                <router-link to="/user">个人中心</router-link>
+                <!-- <router-link to="/user#cash" >游戏记录</router-link> -->
+                <a href="javascript:;" @click="dialogVisible = true">退出登录</a>
+              </div>
             </div>
           </div>
         </div>
+        <!-- <div v-if="info" style="background: #fff;">
+          <h2>Received Information:</h2>
+          <ul>
+          <li v-for="(value, key) in info" :key="key">{{ key }}: {{ value }}</li>
+            <li>sign: {{sign}}</li>
+            <li>sign2: {{sign2}}</li>
+            <li>cookie: {{cookie}}</li>
+            <li>number: {{number}}</li>
+            <li>info: {{info}}</li>
+          </ul>
+        </div>   -->
       </div>
-      <!-- <div v-if="info" style="background: #fff;">
-        <h2>Received Information:</h2>
-        <ul>
-         <li v-for="(value, key) in info" :key="key">{{ key }}: {{ value }}</li>
-          <li>sign: {{sign}}</li>
-          <li>sign2: {{sign2}}</li>
-          <li>cookie: {{cookie}}</li>
-          <li>number: {{number}}</li>
-          <li>info: {{info}}</li>
-        </ul>
-      </div>   -->
-    </div>
+    </keep-alive>
+
     <el-dialog v-model="dialogVisible" title="退出登录" width="500">
       <span>确认退出吗？</span>
       <template #footer>
@@ -111,7 +114,7 @@
   </div>
 </template>
 <script setup>
-import { ref, watch, onMounted, onBeforeUnmount } from "vue";
+import { ref, watch, onMounted, onBeforeUnmount, onBeforeMount } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { ElMessage, ElMessageBox } from "element-plus";
 import Cookies from "js-cookie";
@@ -134,6 +137,7 @@ const sign2 = ref("");
 const netBarName = ref(localStorage.getItem("netBarName"));
 const timer3 = ref(null);
 const timeCount = ref(null);
+const localCount = ref(localStorage.getItem("timeCount"));
 const seconds = ref(0);
 const number = ref(localStorage.getItem("numberToken"));
 const cookie = document.cookie.replace(
@@ -172,12 +176,15 @@ const route = useRoute();
 
 // 一小时倒计时
 timeCount.value = setInterval(() => {
-  seconds.value++;
-  percentage.value = Number(((seconds.value / 60 / 60) * 100).toFixed(2));
-  if (seconds.value == 3600) {
+  localCount.value++;
+  localStorage.setItem("timeCount", localCount.value);
+  localCount.value = localStorage.getItem("timeCount");
+  percentage.value = Number(((localCount.value / 60 / 60) * 100).toFixed(2));
+  if (localCount.value == 3600) {
     showAddInter.value = true;
-    seconds.value = 0;
+    localCount.value = 0;
     percentage.value = 0;
+    localStorage.setItem("timeCount", 0);
     getIntegral();
   } else {
     showAddInter.value = false;
@@ -225,9 +232,16 @@ watch(
     isCurrentPath(path);
   }
 );
+onBeforeMount(() => {
+  percentage.value = Number(
+    ((localStorage.getItem("timeCount") / 60 / 60) * 100).toFixed(2)
+  );
+});
 onBeforeUnmount(() => {
   clearInterval(timer3.value);
   timer3.value = null;
+  clearInterval(timeCount.value);
+  timeCount.value = null;
 });
 const showGamePopupTip = (str) => {
   dialogGameVisible.value = true;

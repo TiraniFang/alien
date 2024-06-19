@@ -1,8 +1,8 @@
 <template>
   <div class="login" v-drag>
-    <video loop autoplay ref="video" @loadedmetadata="playVideo" muted="true">
+    <!-- <video loop autoplay ref="video" @loadedmetadata="playVideo" muted="true">
       <source src="../../assets/yjwj.mp4" type="video/mp4" />
-    </video>
+    </video> -->
     <div class="min" @click="minimizeWindow('min')"></div>
     <div class="close" @click="minimizeWindow('min')"></div>
     <div class="title flex align-center">
@@ -216,7 +216,7 @@ const getStatus = () => {
           if (localStorage.getItem("numberToken")) {
             checkLoginStatus(localStorage.getItem("numberToken"));
           }
-        }, 1000);
+        }, 2000);
       }
     });
 };
@@ -235,6 +235,7 @@ const checkLoginStatus = (n) => {
         getIntegral();
         localStorage.setItem("loginStatus", true);
         localStorage.setItem("fistLogin", true);
+        localStorage.setItem("timeCount", 0);
         let timer = setTimeout(() => {
           router.replace("/home");
           clearTimeout(timer);
@@ -290,9 +291,9 @@ getClientVersion();
 .login {
   width: 100%;
   height: 100%;
-  // background: url(../../assets/login-bj.jpg) no-repeat center;
-  // background-size: cover;
-  // position: relative;
+  background: url(../../assets/login-bj2.jpg) no-repeat center;
+  background-size: cover;
+  position: relative;
   video {
     width: 100%;
     height: 100%;

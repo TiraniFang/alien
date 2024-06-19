@@ -26,11 +26,11 @@
       <div class="theme">
         <img src="../../assets/theme.png" alt="" />
         <p>完成比赛任务可以获得相应的现金奖励</p>
-        <p style="font-size: 14px; color: #e5e5e5">在线满一小时即可赠送积分</p>
-
+        <p style="font-size: 14px; color: #e5e5e5">每在线一小时可获得10积分奖励</p>
+        <!-- 
         <el-button class="start-game" @click="launchLOL" :disabled="isDisabled">{{
           btnMsg
-        }}</el-button>
+        }}</el-button> -->
       </div>
       <div class="task">
         <div class="container">

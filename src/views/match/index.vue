@@ -1,7 +1,7 @@
 <template>
   <Header v-drag />
-  <div v-drag class="match">
-    <div class="match-title">
+  <div class="match">
+    <div class="match-title" v-drag>
       <!-- <img src="../../assets/match-title.png" alt=""> -->
       <div class="flex align-center" v-if="timeCount != null">
         <span>闯关倒计时：</span>
@@ -47,7 +47,7 @@
       <img src="../../assets/arrow2.png" alt="" />
       <p class="text-center">左右可拖动</p>
     </div>
-    <div class="currentInfo">
+    <div class="currentInfo" v-drag>
       <span class="matchIng">{{ matchData.matchingNumber }}人正处于当前关卡</span>
       <div>
         <p>通过条件</p>
