@@ -656,6 +656,7 @@ onBeforeUnmount(() => {
 .el-icon {
   cursor: pointer;
 }
+
 @keyframes beforeAni {
   0% {
     width: 0;
@@ -712,6 +713,7 @@ onBeforeUnmount(() => {
   background: #eb6b35;
   border-color: #eb6b35;
 }
+
 @keyframes toTop {
   0% {
     top: 100%;

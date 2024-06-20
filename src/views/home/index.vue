@@ -292,7 +292,7 @@ getCaro();
   .pagination {
     position: absolute;
     left: 2vw;
-    top: 50%;
+    top: 40%;
     transform: translateY(-50%);
     .game-btn {
       width: 270px;
@@ -339,7 +339,7 @@ getCaro();
   }
   .theme {
     position: absolute;
-    top: 50%;
+    top: 40%;
     text-align: right;
     right: 20px;
     transform: translateY(-50%);

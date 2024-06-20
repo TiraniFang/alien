@@ -74,13 +74,13 @@
                     <span v-if="scope.row.QueueId == 5000000">生存天选单排</span>
                     <span v-if="scope.row.QueueId == 5000200">生存天选双排</span>
                     <span v-if="scope.row.QueueId == 5000001">生存天选三排</span>
-                    <span v-if="scope.row.QueueId == 5000004">生存天人单排</span>
+                    <!-- <span v-if="scope.row.QueueId == 5000004">生存天人单排</span>
                     <span v-if="scope.row.QueueId == 5000202">生存天人双排</span>
-                    <span v-if="scope.row.QueueId == 5000005">生存天人三排</span>
+                    <span v-if="scope.row.QueueId == 5000005">生存天人三排</span> -->
                     <span v-if="scope.row.QueueId == 5000006">生存快速单排</span>
                     <span v-if="scope.row.QueueId == 5000011">生存快速双排</span>
                     <span v-if="scope.row.QueueId == 5000007">生存快速三排</span>
-                    <span v-if="scope.row.QueueId == 5000015">娱乐暗域狂潮(8个队伍)</span>
+                    <span v-if="scope.row.QueueId == 5000015">娱乐暗域狂潮</span>
                     <span v-if="scope.row.QueueId == 5000070">娱乐无间幻境</span>
                     <span v-if="scope.row.QueueId == 5000016">娱乐无尽枪火</span>
                     <span v-if="scope.row.QueueId == 5000010">娱乐无尽试炼</span>
