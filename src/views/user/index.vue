@@ -1,6 +1,6 @@
 <template>
   <Header v-drag />
-  <div v-drag class="user">
+  <div class="user" v-drag>
     <div class="container">
       <div class="flex space-between box">
         <div class="left">
@@ -80,7 +80,7 @@
                     <span v-if="scope.row.QueueId == 5000006">生存快速单排</span>
                     <span v-if="scope.row.QueueId == 5000011">生存快速双排</span>
                     <span v-if="scope.row.QueueId == 5000007">生存快速三排</span>
-                    <span v-if="scope.row.QueueId == 5000015">娱乐暗域狂潮(8个队伍)</span>
+                    <span v-if="scope.row.QueueId == 5000140">娱乐暗域狂潮</span>
                     <span v-if="scope.row.QueueId == 5000070">娱乐无间幻境</span>
                     <span v-if="scope.row.QueueId == 5000016">娱乐无尽枪火</span>
                     <span v-if="scope.row.QueueId == 5000010">娱乐无尽试炼</span>

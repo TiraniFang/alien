@@ -1,5 +1,5 @@
 <template>
-  <div v-drag class="login">
+  <div class="login">
     <!-- <video loop autoplay ref="video" @loadedmetadata="playVideo" muted="true">
       <source src="../../assets/yjwj.mp4" type="video/mp4" />
     </video> -->
@@ -9,11 +9,11 @@
       <img src="../../assets/login-title.png" />
       <span style="color: #666">{{ info2 + ".1" }}</span>
     </div>
-    <div class="login-panel" v-if="isConfirm">
+    <div class="login-panel" v-if="isConfirm && loginEwm != ''">
       <img class="s-title" src="../../assets/login-st.png" alt="" />
       <img src="../../assets/s-line.png" alt="" class="line" />
 
-      <img v-if="loginEwm != ''" :src="loginEwm" alt="" class="ewm" />
+      <img :src="loginEwm" alt="" class="ewm" />
       <img src="../../assets/s-line.png" alt="" class="line" />
       <p style="margin-top: 20px">微信扫一扫立即参与</p>
       <!-- <el-button type="primary"  @click="callJavaMethod">获取</el-button> -->
@@ -44,8 +44,8 @@
             }"
           >
             <!-- 'current': item.currentGuan && currentIndex == index -->
-            <div class="redbag">
-              <img src="../../assets/rebbag2.png" alt="" />
+            <div class="redbag" @click="confirm">
+              <img src="../../assets/rebbag3.png" alt="" />
               <span>969.6</span>
               <img class="arrow" src="../../assets/arrow.png" alt="" />
             </div>
@@ -55,7 +55,7 @@
         </div>
       </div>
     </div>
-    <div class="confirm" :class="{ hide: isConfirm }" @click="confirm">登录拿现金！</div>
+    <div class="confirm" :class="{ hide: isConfirm }" @click="confirm">点击开始闯关</div>
     <el-dialog v-model="dialogVisible" title="关闭窗口" width="500">
       <span>确认关闭程序吗？</span>
       <template #footer>
@@ -471,6 +471,8 @@ const confirm = () => {
       transform: translateX(-50%);
       text-align: center;
       display: none;
+      animation: toTop2 1s infinite;
+      cursor: pointer;
       .arrow {
         width: 20px;
         position: absolute;
@@ -616,6 +618,20 @@ const confirm = () => {
   }
   100% {
     top: 100%;
+    opacity: 1;
+  }
+}
+@keyframes toTop2 {
+  0% {
+    top: -126px;
+    opacity: 1;
+  }
+  50% {
+    top: -150px;
+    opacity: 1;
+  }
+  100% {
+    top: -126px;
     opacity: 1;
   }
 }

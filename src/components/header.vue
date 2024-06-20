@@ -153,13 +153,19 @@ const menus = ref([
     activeIcon: require("../assets/home-on.png"),
   },
   {
-    text: "比赛",
+    text: "闯关",
     path: "/match",
-    icon: require("../assets/match-icon.png"),
-    activeIcon: require("../assets/match-on.png"),
+    icon: require("../assets/chuangguan.png"),
+    activeIcon: require("../assets/chuangguan-on.png"),
   },
+  // {
+  //   text: "比赛",
+  //   path: "/competition",
+  //   icon: require("../assets/match-icon.png"),
+  //   activeIcon: require("../assets/match-on.png"),
+  // },
   {
-    text: "福利",
+    text: "积分",
     path: "/gift",
     icon: require("../assets/gift.png"),
     activeIcon: require("../assets/gift-on.png"),
