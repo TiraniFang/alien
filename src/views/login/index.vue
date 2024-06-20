@@ -1,5 +1,5 @@
 <template>
-  <div class="login">
+  <div class="login" v-drag>
     <!-- <video loop autoplay ref="video" @loadedmetadata="playVideo" muted="true">
       <source src="../../assets/yjwj.mp4" type="video/mp4" />
     </video> -->
