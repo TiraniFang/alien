@@ -196,7 +196,6 @@ const countInterval = () => {
       percentage.value = 0;
       localStorage.setItem("timeCount", 0);
     }
-    console.log(percentage.value);
   }, 1000);
 };
 

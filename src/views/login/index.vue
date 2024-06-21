@@ -298,8 +298,8 @@ const confirm = () => {
   isConfirm.value = true;
   // getClientInfo();
   callJavaMethod();
-  getClientVersion();
 };
+getClientVersion();
 </script>
 <style lang="scss" scoped>
 .login {

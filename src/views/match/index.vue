@@ -506,6 +506,7 @@ onBeforeUnmount(() => {
   white-space: normal;
   height: 280px;
   width: 220px;
+  user-select: none;
   &:nth-child(6n) .item .redbag {
     display: block;
   }
