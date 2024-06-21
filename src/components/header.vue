@@ -121,7 +121,6 @@ import Cookies from "js-cookie";
 import CryptoJS from "crypto-js";
 
 import api from "../api/request";
-// import { getIntergral } from '../utils/base.js'
 
 const emits = defineEmits(["childEvent"]);
 const percentage = ref(0);
@@ -153,13 +152,19 @@ const menus = ref([
     activeIcon: require("../assets/home-on.png"),
   },
   {
-    text: "比赛",
+    text: "闯关",
     path: "/match",
-    icon: require("../assets/match-icon.png"),
-    activeIcon: require("../assets/match-on.png"),
+    icon: require("../assets/chuangguan.png"),
+    activeIcon: require("../assets/chuangguan-on.png"),
   },
+  // {
+  //   text: "比赛",
+  //   path: "/competition",
+  //   icon: require("../assets/match-icon.png"),
+  //   activeIcon: require("../assets/match-on.png"),
+  // },
   {
-    text: "福利",
+    text: "赚积分",
     path: "/gift",
     icon: require("../assets/gift.png"),
     activeIcon: require("../assets/gift-on.png"),
@@ -175,40 +180,39 @@ const router = useRouter();
 const route = useRoute();
 
 // 一小时倒计时
-timeCount.value = setInterval(() => {
-  localCount.value++;
-  localStorage.setItem("timeCount", localCount.value);
-  localCount.value = localStorage.getItem("timeCount");
-  percentage.value = Number(((localCount.value / 60 / 60) * 100).toFixed(2));
-  if (localCount.value == 3600) {
-    showAddInter.value = true;
-    localCount.value = 0;
-    percentage.value = 0;
-    localStorage.setItem("timeCount", 0);
-    getIntegral();
-  } else {
-    showAddInter.value = false;
-  }
-}, 1000);
+const countInterval = () => {
+  timeCount.value = setInterval(() => {
+    localCount.value++;
+    localStorage.setItem("timeCount", localCount.value);
+    localCount.value = localStorage.getItem("timeCount");
+    percentage.value = Number(((localCount.value / 60 / 60) * 100).toFixed(2));
+    if (localCount.value == 3600) {
+      showAddInter.value = true;
+      let i = clearTimeout(() => {
+        showAddInter.value = false;
+        clearTimeout(i);
+      }, 2000);
+      localCount.value = 0;
+      percentage.value = 0;
+      localStorage.setItem("timeCount", 0);
+    }
+    console.log(percentage.value);
+  }, 1000);
+};
 
 onMounted(async () => {
+  countInterval();
   isCurrentPath(route.path);
+  getIntegral();
 
+  // 与客户端交互
   if (window.client) {
     window.minimizeWindow = minimizeWindow;
     window.showGamePopupTip = showGamePopupTip;
     window.handleMatchData = handleMatchData;
-    //  window.gameLogin = gameLogin
-    //  window.gameLogout = gameLogout
   } else {
     console.log("Java bridge not found");
   }
-  // try {
-  //   const result = await window.handleMatchData();
-  //   console.log("Result from handleMatchData", result);
-  // } catch (error) {
-  //   console.log("Error", error);
-  // }
 });
 
 // 查询登录状态时间
@@ -218,9 +222,25 @@ const checkLoginStatus = () => {
     .post("/method/account/", {
       method: "CHECK_LOGIN_LIFE",
     })
-    .then((res) => {});
+    .then((res) => {
+      console.log(res.data.result);
+      if (res.data.result.number != 0) {
+        console.log(
+          "后端满一小时了，倒计时归0，我更新了嗷",
+          new Date().toLocaleTimeString()
+        );
+
+        clearInterval(timeCount.value);
+        timeCount.value = null;
+        localCount.value = 0;
+        // 重启倒计时
+        countInterval();
+        getIntegral();
+      }
+    });
 };
 
+// 一分钟检测一次登录状态
 timer3.value = setInterval(() => {
   checkLoginStatus();
 }, 60000);
@@ -324,7 +344,7 @@ const handleMatchData = async function (str, callback) {
       })
       .then((res) => {
         if (res.data.code == 10000) {
-          // getIntegral();
+          getIntegral();
           callback("true");
         } else {
           callback(res.data.message);
@@ -364,6 +384,7 @@ const getIntegral = () => {
         localStorage.setItem("matchCount", res.data.result.match_count);
         localStorage.setItem("matchLevel", res.data.result.match_level);
         myIntergral.value = localStorage.getItem("myIntergral");
+        console.log(myIntergral.value, "我的最新积分");
       } else {
         ElMessage.error("未登录吗？");
       }
@@ -406,7 +427,6 @@ const toQuit = () => {
 }
 .menu {
   position: relative;
-  margin-left: 60px;
   .ewm {
     background: rgba(0, 0, 0, 0.4);
     padding: 30px;
@@ -450,7 +470,6 @@ const toQuit = () => {
   margin-right: 10px;
 }
 .logo {
-  width: 73px;
   height: 79px;
   margin-right: 20px;
   position: relative;

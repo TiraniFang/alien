@@ -1,12 +1,22 @@
 <template>
   <Header v-drag @childEvent="getTaskList" />
-  <div
-    v-drag
-    class="home"
-    :style="{ 'background-image': `url(${advertiseList[currentIndex].banner})` }"
-  >
+  <div v-drag class="home">
     <div class="layout"></div>
     <div class="container">
+      <div class="swiper">
+        <swiper
+          slides-per-view="1"
+          :autoplay="swiper_options.autoplay"
+          :speed="swiper_options.speed"
+          :loop="swiper_options.loop"
+        >
+          <swiper-slide
+            v-for="(item, index) in advertiseList"
+            :key="index"
+            :style="{ 'background-image': `url(${item.banner})` }"
+          ></swiper-slide>
+        </swiper>
+      </div>
       <div class="pagination">
         <div
           class="game-btn"
@@ -26,7 +36,7 @@
       <div class="theme">
         <img src="../../assets/theme.png" alt="" />
         <p>完成比赛任务可以获得相应的现金奖励</p>
-        <p style="font-size: 14px; color: #e5e5e5">每在线一小时可获得10积分奖励</p>
+        <p style="font-size: 14px; color: #e5e5e5">累计在线可获得积分奖励</p>
         <!-- 
         <el-button class="start-game" @click="launchLOL" :disabled="isDisabled">{{
           btnMsg
@@ -55,14 +65,6 @@
               <div class="bottom">
                 <div class="flex align-center">
                   <p>任务要求：</p>
-
-                  <!-- <el-tooltip
-                    class="box-item"
-                    effect="dark"
-                    content="Top Left prompts info"
-                    placement="top"
-                  >
-                  <template #content ><p v-html="modelStyle"></p> </template> -->
                   <div
                     class="flex align-center"
                     style="cursor: pointer"
@@ -88,14 +90,6 @@
               <div class="bottom">
                 <div class="flex align-center">
                   <p>任务要求：</p>
-
-                  <!-- <el-tooltip
-                    class="box-item"
-                    effect="dark"
-                    content="Top Left prompts info"
-                    placement="top"
-                  >
-                  <template #content ><p v-html="modelStyle"></p> </template> -->
                   <div
                     class="flex align-center"
                     style="cursor: pointer"
@@ -121,10 +115,19 @@
       @continueTasks="showGiftDialog = false"
     />
     <Rules v-if="showRuleDialog" @closeRules="showRuleDialog = false" />
+
+    <el-dialog v-model="dialogGameVisible" title="提示" width="500">
+      <span>请去菜单启动游戏</span>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button type="primary" @click="dialogGameVisible = false"> 确定 </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 <script setup>
-import { ref, onBeforeUnmount } from "vue";
+import { ref, onBeforeUnmount, reactive } from "vue";
 import Header from "@/components/header.vue";
 import { QuestionFilled } from "@element-plus/icons-vue";
 import GiftDialog from "../gift/components/gift-dialog.vue";
@@ -132,15 +135,18 @@ import Rules from "./components/rules.vue";
 import { ElMessage } from "element-plus";
 import api from "../../api/request";
 import { useRouter } from "vue-router";
+import { Swiper, SwiperSlide } from "swiper/vue";
+import SwiperCore, { Autoplay, EffectFade } from "swiper";
+SwiperCore.use([Autoplay, EffectFade]);
+// Import Swiper styles
+import "swiper/swiper.min.css";
 const router = useRouter();
 // 当前游戏索引
 const currentIndex = ref(0);
 const gameIndex = ref(0);
 
 const btnMsg = ref("开始游戏");
-const modelStyle = ref(
-  "召唤师峡谷自选模式获胜<br/>召唤师峡谷单双排位获胜<br/>召唤师峡谷灵活排位获胜<br/>极地大乱斗模式获胜<br/>云顶匹配模式前三名<br/>云顶排位模式前三名<br/>云顶狂暴模式前三名<br/>云顶双人作战前二名<br/>云顶恭喜发财前三名<br/>斗魂竞技场前三名"
-);
+const dialogGameVisible = ref(false);
 const info = ref(null);
 const gameType = ref("LOL");
 const isDisabled = ref(false);
@@ -152,11 +158,31 @@ const showRuleDialog = ref(false);
 const timer = ref(null);
 const timer2 = ref(null);
 const lastReward = ref({});
+
+// const swiperOptions = ref({
+//   // 所有Swiper选项都可以在这里设置
+//   // 例如：自动播放
+//   effect: "fade",
+//   autoplay: {
+//     delay: 100,
+//     disableOnInteraction: false,
+//   },
+// });
 onBeforeUnmount(() => {
   // clearInterval(timer2.value);
   clearInterval(timer.value);
   timer.value = null;
   // timer2.value = null;
+});
+//指定swiper的设置
+let swiper_options = reactive({
+  autoplay: {
+    delay: 3000,
+    disableOnInteraction: false,
+  },
+  effect: "fade",
+  loop: true,
+  speed: 1000,
 });
 const gameList = ref([
   {
@@ -172,6 +198,7 @@ const gameList = ref([
     gameIcon: require("../../assets/yjwj.png"),
   },
 ]);
+
 const advertiseList = ref([
   {
     banner: require("../../assets/banner03.jpg"),
@@ -181,6 +208,9 @@ const advertiseList = ref([
   },
 ]);
 
+const onSwiper = (swiper) => {
+  console.log(swiper);
+};
 const launchLOL = () => {
   btnMsg.value = "启动游戏中...";
   if (window.client) {
@@ -208,24 +238,12 @@ const launchLOL = () => {
 // 切换游戏
 const switchGame = (index) => {
   gameIndex.value = index;
-
+  dialogGameVisible.value = true;
   if (index == 1) {
     gameType.value = "Naraka";
-    modelStyle.value =
-      "生存天选之人模式前十名<br />生存快速匹配模式前十名<br />生存天人之战模式前十名<br />娱乐无尽试炼模式前六名<br />娱乐武道争锋模式前三名<br />娱乐地脉之战模式胜利";
   } else {
     gameType.value = "LOL";
-    modelStyle.value =
-      "召唤师峡谷自选模式获胜<br/>召唤师峡谷单双排位获胜<br/>召唤师峡谷灵活排位获胜<br/>极地大乱斗模式获胜<br/>云顶匹配模式前三名<br/>云顶排位模式前三名<br/>云顶狂暴模式前三名<br/>云顶双人作战前二名<br/>云顶恭喜发财前三名<br/>斗魂竞技场前三名";
   }
-  clearInterval(timer.value);
-  timer.value = null;
-  getCaro();
-};
-// 获取奖励
-const giftDialogShow = (item) => {
-  showGiftDialog.value = true;
-  currentGift.value = item;
 };
 
 // 获取任务数据列表
@@ -241,34 +259,13 @@ const getTaskList = () => {
       // taskList.value.push(last);
     });
 };
-// const inter = () => {
-//   timer2.value = setInterval(() => {
-//     getTaskList();
-//   }, 1000);
-// };
+
 // inter();
 if (!localStorage.getItem("loginStatus")) {
   router.replace("/login");
 } else {
   getTaskList();
 }
-
-const getCaro = () => {
-  timer.value = setInterval(() => {
-    if (currentIndex.value == 0) {
-      currentIndex.value = 1;
-      gameType.value = "Naraka";
-      modelStyle.value =
-        "生存天选之人模式前十名<br />生存快速匹配模式前十名<br />生存天人之战模式前十名<br />娱乐无尽试炼模式前六名<br />娱乐武道争锋模式前三名<br />娱乐地脉之战模式获胜";
-    } else {
-      currentIndex.value = 0;
-      gameType.value = "LOL";
-      modelStyle.value =
-        "召唤师峡谷自选模式获胜<br/>召唤师峡谷单双排位获胜<br/>召唤师峡谷灵活排位获胜<br/>极地大乱斗模式获胜<br/>云顶匹配模式前三名<br/>云顶排位模式前三名<br/>云顶狂暴模式前三名<br/>云顶双人作战前二名<br/>云顶恭喜发财前三名<br/>斗魂竞技场前三名";
-    }
-  }, 5000);
-};
-getCaro();
 </script>
 <style lang="scss">
 .home {
@@ -279,6 +276,21 @@ getCaro();
   background-repeat: no-repeat;
   position: relative;
   transition: all 0.2s;
+  .swiper {
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    .swiper-slide {
+      height: 100vh;
+      background-size: cover;
+      background-position: center top;
+      background-repeat: no-repeat;
+      position: relative;
+    }
+  }
   .layout {
     width: 100%;
     height: 100%;
@@ -288,12 +300,14 @@ getCaro();
     top: -0;
     left: 50%;
     transform: translateX(-50%);
+    z-index: 1;
   }
   .pagination {
     position: absolute;
     left: 2vw;
-    top: 40%;
+    top: 50%;
     transform: translateY(-50%);
+    z-index: 2;
     .game-btn {
       width: 270px;
       height: 82px;
@@ -339,10 +353,11 @@ getCaro();
   }
   .theme {
     position: absolute;
-    top: 40%;
+    top: 50%;
     text-align: right;
     right: 20px;
     transform: translateY(-50%);
+    z-index: 2;
     img {
       width: 421px;
     }
@@ -373,6 +388,7 @@ getCaro();
     left: 0;
     color: #fff;
     padding-bottom: 20px;
+    z-index: 2;
     .rule {
       color: rgb(228, 228, 228);
       display: inline-block;

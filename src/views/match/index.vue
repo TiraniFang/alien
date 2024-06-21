@@ -9,7 +9,7 @@
       </div>
     </div>
     <div class="container" @mousedown="startDrag" @mousemove="doDrag" @mouseup="endDrag">
-      <div class="layout"></div>
+      <!-- <div class="layout"></div> -->
       <!--  -->
       <div class="containers" ref="containers">
         <!-- 这里放置你的超长内容 -->
@@ -23,10 +23,12 @@
             ></div>
             <div class="line" v-if="passList.includes(index + 1)"></div>
             <div
+              @click="choose(item, index)"
               class="item"
               :class="{
                 pass: passList.includes(index),
                 ani: currentIndex == index,
+                grayAni: aniIndex == index,
               }"
             >
               <!-- 'current': item.currentGuan && currentIndex == index -->
@@ -49,6 +51,17 @@
     </div>
     <div class="currentInfo" v-drag>
       <span class="matchIng">{{ matchData.matchingNumber }}人正处于当前关卡</span>
+      <!-- 回到当前关卡 -->
+      <el-tooltip
+        class="box-item"
+        effect="dark"
+        content="点击回到当前关卡"
+        placement="top"
+      >
+        <p class="returnCurrent" @click="getMatchData">
+          <el-icon size="22"><RefreshLeft /></el-icon>
+        </p>
+      </el-tooltip>
       <div>
         <p>通过条件</p>
         <p
@@ -57,7 +70,7 @@
           @click="showRuleDialog = true"
         >
           <span style="display: inline-block; margin-right: 5px"
-            >点击查看任务要求详情({{ matchData.Number }}/{{ currentIndex + 1 }} ) </span
+            >点击查看任务要求详情({{ matchData.Number }}/{{ totalNumber }} ) </span
           ><el-icon color="#fff" :size="18"><QuestionFilled /></el-icon>
         </p>
       </div>
@@ -81,12 +94,12 @@
         <el-button
           class="btn"
           @click="dialogVisible = true"
-          :disabled="matchData.InLevel != 0"
+          :disabled="matchData.InLevel != 0 || totalNumber != currentIndex + 1"
         >
           {{
             matchData.InLevel == 0
               ? "开始闯关"
-              : currentIndex + 1 == matchData.Number
+              : totalNumber == matchData.Number
               ? "已通关"
               : "闯关中..."
           }}
@@ -120,7 +133,7 @@ import { ElMessage } from "element-plus";
 import api from "../../api/request";
 import Rules from "../home/components/rules.vue";
 
-import { QuestionFilled } from "@element-plus/icons-vue";
+import { QuestionFilled, RefreshLeft } from "@element-plus/icons-vue";
 
 const timer = ref(null);
 const showRuleDialog = ref(false);
@@ -133,20 +146,31 @@ const dialogVisible = ref(false);
 const showArrowTip = ref(false);
 const passList = ref([]);
 const currentIndex = ref(-1);
-const matchingNumber = ref(18);
+const aniIndex = ref(-1);
+
+const totalNumber = ref(1);
 const choose = (item, index) => {
-  if (!index == matchData.value.Level && !passList.value.includes(index)) {
-    ElMessage.warning("请先完成前面的关卡~");
+  console.log(index);
+  aniIndex.value = index;
+  console.log(aniIndex.value);
+  if (index != matchData.value.Level && !passList.value.includes(index)) {
+    needIntergral.value = (index + 1) * matchData.value.BasePoint;
+    rewardMoney.value = (index + 1) * matchData.value.BaseAmount;
+    totalNumber.value = index + 1;
+    if ((index + 1) % 6 == 0) {
+      rewardMoney.value =
+        (index + 1) * matchData.value.BaseAmount + (index + 1) * 100 * 0.6;
+    } else {
+      rewardMoney.value = (index + 1) * matchData.value.BaseAmount;
+    }
     return;
+  } else if (currentIndex.value == index) {
+    getMatchData();
+  } else {
+    ElMessage.success("当前关卡已通过");
   }
-  currentIndex.value = index;
-  needIntergral.value = (currentIndex.value + 1) * matchData.value.BasePoint;
 };
 
-// list.value.map((item,index) => {
-//   if (item.currentGuan) currentIndex.value = index
-
-// })
 onMounted(async () => {
   getMatchData();
 
@@ -198,6 +222,7 @@ const getMatchData = () => {
     .then((res) => {
       matchData.value = res.data.result;
       currentIndex.value = matchData.value.Level;
+      totalNumber.value = currentIndex.value + 1;
       needIntergral.value = (matchData.value.Level + 1) * matchData.value.BasePoint;
       rewardMoney.value = (currentIndex.value + 1) * matchData.value.BaseAmount;
 
@@ -228,26 +253,13 @@ const getMatchData = () => {
           allNumArray.value.push(i * matchData.value.BaseAmount);
         }
       }
-      if (matchData.value.Level > 6) {
-        let t = setTimeout(() => {
-          containers.value.scrollLeft = (matchData.value.Level - 6) * 220;
-          clearTimeout(t);
-        }, 200);
-      }
-      // timer.value = setInterval(() => {
-      //   matchData.value.expires--;
-      //   console.log(matchData.value.expires);
-      //   if (matchData.value.expires == 0) {
-      //     getMatchData();
-      //     clearInterval(timer.value);
-      //   }
-      // }, 1000);
+      let t = setTimeout(() => {
+        containers.value.scrollLeft = (matchData.value.Level - 6) * 220;
+        console.log(containers.value.scrollLeft);
+        clearTimeout(t);
+      }, 200);
     });
 };
-// timer.value = setInterval(() => {
-//   getMatchData();
-//   getIntegral();
-// }, 1000);
 
 // 开始闯关
 const getStart = () => {
@@ -260,9 +272,8 @@ const getStart = () => {
       .then((res) => {
         dialogVisible.value = false;
         if (res.data.code == 10000) {
+          myIntergral.value = Number(myIntergral.value) - Number(needIntergral.value);
           ElMessage.success("报名成功！");
-          getIntegral();
-          window.location.reload();
         } else {
           ElMessage.error(res.data.message);
         }
@@ -433,6 +444,11 @@ onBeforeUnmount(() => {
     color: #522705;
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
+  }
+  .returnCurrent {
+    position: absolute;
+    right: 0;
+    bottom: 100%;
   }
   p {
     font-size: 14px;
@@ -632,6 +648,17 @@ onBeforeUnmount(() => {
       opacity: 1;
       background: url(../../assets/gq-select.png) no-repeat;
       background-size: contain;
+      &::after {
+        border-width: 2px;
+      }
+      &::before {
+        animation: beforeAni 1.5s infinite;
+      }
+      &::after {
+        animation: afterAni 1.5s 0.1s infinite;
+      }
+    }
+    &.grayAni {
       &::after {
         border-width: 2px;
       }

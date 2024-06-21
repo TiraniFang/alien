@@ -8,7 +8,7 @@ module.exports = defineConfig({
     open: true,
     proxy: {
       "/method": {
-        target: 'http://bs.itytl.cn/', 
+        target: 'http://bs.itytl.com/', 
         changeOrigin: true,
         pathRewrite: { 
           "^/": "" 

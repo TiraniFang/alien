@@ -70,7 +70,7 @@
                     <span v-if="scope.row.QueueId == 1130">云顶狂暴</span>
                     <span v-if="scope.row.QueueId == 1160">云顶双人作战</span>
                     <span v-if="scope.row.QueueId == 1210">云顶恭喜发财</span>
-                    <span v-if="scope.row.QueueId == 1700">斗魂竞技场</span>
+                    <!-- <span v-if="scope.row.QueueId == 1700">斗魂竞技场</span> -->
                     <span v-if="scope.row.QueueId == 5000000">生存天选单排</span>
                     <span v-if="scope.row.QueueId == 5000200">生存天选双排</span>
                     <span v-if="scope.row.QueueId == 5000001">生存天选三排</span>
@@ -81,13 +81,13 @@
                     <span v-if="scope.row.QueueId == 5000011">生存快速双排</span>
                     <span v-if="scope.row.QueueId == 5000007">生存快速三排</span>
                     <span v-if="scope.row.QueueId == 5000015">娱乐暗域狂潮</span>
-                    <span v-if="scope.row.QueueId == 5000070">娱乐无间幻境</span>
-                    <span v-if="scope.row.QueueId == 5000016">娱乐无尽枪火</span>
+                    <!-- <span v-if="scope.row.QueueId == 5000070">娱乐无间幻境</span> -->
+                    <!-- <span v-if="scope.row.QueueId == 5000016">娱乐无尽枪火</span> -->
                     <span v-if="scope.row.QueueId == 5000010">娱乐无尽试炼</span>
                     <span v-if="scope.row.QueueId == 5000060">娱乐武道争锋</span>
-                    <span v-if="scope.row.QueueId == 5000600">娱乐地脉之战</span>
-                    <span v-if="scope.row.QueueId == 5000080">娱乐糖豆人</span>
-                    <span v-if="scope.row.QueueId == 5000400">娱乐共振联赛</span>
+                    <!-- <span v-if="scope.row.QueueId == 5000600">娱乐地脉之战</span> -->
+                    <!-- <span v-if="scope.row.QueueId == 5000080">娱乐糖豆人</span> -->
+                    <!-- <span v-if="scope.row.QueueId == 5000400">娱乐共振联赛</span> -->
                     <span v-if="scope.row.QueueId == 5000700">娱乐武道对决</span>
                   </template>
                 </el-table-column>
