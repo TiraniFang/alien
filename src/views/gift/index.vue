@@ -8,7 +8,7 @@
         <div class="flex align-center">
           <img src="../../assets/task.png" alt="" />
           <span
-            >所有福利<span style="font-size: 12px">
+            >所有任务<span style="font-size: 12px">
               (积分可用于闯关和商城兑换奖品)
             </span></span
           >
@@ -16,7 +16,7 @@
 
         <div class="flex align-center">
           <p style="margin-left: 20px; font-size: 14px">
-            福利开放时间(<span style="color: rgb(255, 106, 106)">每日8：00 - 23：59</span
+            任务开放时间(<span style="color: rgb(255, 106, 106)">每日8：00 - 23：59</span
             >)
           </p>
           <!-- <el-countdown title="" v-if="timeCount != null" :value="timeCount" /> -->

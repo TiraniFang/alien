@@ -48,7 +48,7 @@
             <div class="title flex align-center">
               <img src="../../assets/task.png" alt="" />
               <span
-                >福利进度<span style="font-size: 12px">
+                >任务进度<span style="font-size: 12px">
                   (积分可用于闯关和商城兑换奖品)
                 </span></span
               >

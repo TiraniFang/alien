@@ -168,7 +168,7 @@ const menus = ref([
     activeIcon: require("../assets/shop-on.png"),
   },
   {
-    text: "商城",
+    text: "福利",
     path: "/shop",
     icon: require("../assets/gift.png"),
     activeIcon: require("../assets/gift-on.png"),
