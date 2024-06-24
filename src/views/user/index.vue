@@ -1,5 +1,5 @@
 <template>
-  <Header v-drag />
+  <Header v-drag @childEvent="switchTab(currentIndex)" :intergral="myIntergral" />
   <div v-drag class="user">
     <div class="container">
       <div class="flex space-between box">
@@ -39,13 +39,7 @@
           </div>
           <div v-if="currentIndex == 0">
             <div v-if="currentIndex == 0 && table.length > 0">
-              <el-table
-                :data="table"
-                style="width: 100%"
-                align="center"
-                v-loading="loading"
-                element-loading-text="获取中，请稍等..."
-              >
+              <el-table :data="table" style="width: 100%" align="center">
                 <el-table-column label="游戏名称" prop="name">
                   <template #default="scope">
                     <div class="flex align-center" v-if="scope.row.Type == 0">
@@ -147,14 +141,8 @@
             <el-empty description="暂无记录" v-else />
           </div>
           <div v-if="currentIndex == 1">
-            <div v-if="currentIndex == 1 && table.length > 0">
-              <el-table
-                :data="table"
-                style="width: 100%"
-                align="center"
-                v-loading="loading"
-                element-loading-text="获取中，请稍等..."
-              >
+            <div v-if="currentIndex == 1 && table2.length > 0">
+              <el-table :data="table2" style="width: 100%" align="center">
                 <el-table-column label="变动类型" prop="transDate" align="center">
                   <template #default="scope">
                     <p
@@ -206,14 +194,8 @@
             <el-empty description="暂无记录" v-else />
           </div>
           <div v-if="currentIndex == 2">
-            <div v-if="currentIndex == 2 && table.length > 0">
-              <el-table
-                :data="table"
-                style="width: 100%"
-                align="center"
-                v-loading="loading"
-                element-loading-text="获取中，请稍等..."
-              >
+            <div v-if="currentIndex == 2 && table3.length > 0">
+              <el-table :data="table3" style="width: 100%" align="center">
                 <el-table-column label="获得现金" prop="name" align="center">
                   <template #default="scope">
                     <div class="flex align-center space-center">
@@ -290,6 +272,11 @@
     />
   </div>
 </template>
+<script>
+export default {
+  name: "User",
+};
+</script>
 <script setup>
 import { onMounted, ref, watch } from "vue";
 import Header from "@/components/header.vue";
@@ -325,6 +312,9 @@ const currentPage = ref(1);
 
 const tabs = ref(["游戏记录", "积分记录", "现金记录"]);
 const table = ref([]);
+const table2 = ref([]);
+const table3 = ref([]);
+
 onMounted(() => {
   console.log(route, " route");
 });
@@ -445,11 +435,9 @@ const getInteraLog = () => {
       size: pageSize2.value,
     })
     .then((res) => {
-      table.value = res.data.result.dataList;
+      table2.value = res.data.result.dataList;
       total.value = res.data.result.totalCount;
       loading.value = false;
-
-      console.log(table.value);
     });
 };
 
@@ -463,7 +451,7 @@ const getCashLog = () => {
       size: pageSize3.value,
     })
     .then((res) => {
-      table.value = res.data.result.data;
+      table3.value = res.data.result.data;
       total.value = res.data.result.count;
       loading.value = false;
     });

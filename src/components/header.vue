@@ -68,7 +68,7 @@
                     </el-tooltip>
                   </p> -->
                   <p>
-                    当前积分：<span>{{ myIntergral }}</span>
+                    当前积分：<span>{{ intergral }}</span>
                   </p>
                 </div>
               </div>
@@ -122,6 +122,7 @@ import CryptoJS from "crypto-js";
 
 import api from "../api/request";
 
+const props = defineProps(["intergral"]);
 const emits = defineEmits(["childEvent"]);
 const percentage = ref(0);
 const dialogGameVisible = ref(false);
@@ -135,10 +136,7 @@ const sign = ref("");
 const sign2 = ref("");
 const netBarName = ref(localStorage.getItem("netBarName"));
 const timer3 = ref(null);
-const timeCount = ref(null);
 const localCount = ref(localStorage.getItem("timeCount"));
-const seconds = ref(0);
-const number = ref(localStorage.getItem("numberToken"));
 const cookie = document.cookie.replace(
   /(?:(?:^|.*;\s*)LOL_MATCH_SERVER\s*\=\s*([^;]*).*$)|^.*$/,
   "$1"
@@ -166,44 +164,22 @@ const menus = ref([
   {
     text: "赚积分",
     path: "/gift",
-    icon: require("../assets/gift.png"),
-    activeIcon: require("../assets/gift-on.png"),
+    icon: require("../assets/shop.png"),
+    activeIcon: require("../assets/shop-on.png"),
   },
   {
     text: "商城",
     path: "/shop",
-    icon: require("../assets/shop.png"),
-    activeIcon: require("../assets/shop-on.png"),
+    icon: require("../assets/gift.png"),
+    activeIcon: require("../assets/gift-on.png"),
   },
 ]);
 const router = useRouter();
 const route = useRoute();
 
-// 一小时倒计时
-const countInterval = () => {
-  timeCount.value = setInterval(() => {
-    localCount.value++;
-    localStorage.setItem("timeCount", localCount.value);
-    localCount.value = localStorage.getItem("timeCount");
-    percentage.value = Number(((localCount.value / 60 / 60) * 100).toFixed(2));
-    if (localCount.value == 3600) {
-      showAddInter.value = true;
-      let i = clearTimeout(() => {
-        showAddInter.value = false;
-        clearTimeout(i);
-      }, 2000);
-      localCount.value = 0;
-      percentage.value = 0;
-      localStorage.setItem("timeCount", 0);
-    }
-  }, 1000);
-};
-
 onMounted(async () => {
-  countInterval();
   isCurrentPath(route.path);
   getIntegral();
-
   // 与客户端交互
   if (window.client) {
     window.minimizeWindow = minimizeWindow;
@@ -222,18 +198,21 @@ const checkLoginStatus = () => {
       method: "CHECK_LOGIN_LIFE",
     })
     .then((res) => {
-      console.log(res.data.result);
-      if (res.data.result.number != 0) {
-        console.log(
-          "后端满一小时了，倒计时归0，我更新了嗷",
-          new Date().toLocaleTimeString()
+      localStorage.setItem("timeCount", res.data.result.LoginTickCount);
+      if (localStorage.getItem("timeCount") <= 3600) {
+        percentage.value = Number(
+          ((Number(localStorage.getItem("timeCount")) / 60 / 60) * 100).toFixed(2)
         );
+      } else {
+        console.log(Number(localStorage.getItem("timeCount")) % 3600);
+        percentage.value = Number(
+          (((Number(localStorage.getItem("timeCount")) % 3600) / 60 / 60) * 100).toFixed(
+            2
+          )
+        );
+      }
 
-        clearInterval(timeCount.value);
-        timeCount.value = null;
-        localCount.value = 0;
-        // 重启倒计时
-        countInterval();
+      if (res.data.result.number != 0) {
         getIntegral();
       }
     });
@@ -245,22 +224,17 @@ timer3.value = setInterval(() => {
 }, 60000);
 checkLoginStatus();
 
-watch(
-  () => route.path,
-  (path) => {
-    isCurrentPath(path);
+window.addEventListener("storage", (event) => {
+  if (event.key === "myIntergral") {
+    myIntergral.value = event.newValue;
+    getIntegral();
+    emits("childEvent");
   }
-);
-onBeforeMount(() => {
-  percentage.value = Number(
-    ((localStorage.getItem("timeCount") / 60 / 60) * 100).toFixed(2)
-  );
 });
+
 onBeforeUnmount(() => {
   clearInterval(timer3.value);
   timer3.value = null;
-  clearInterval(timeCount.value);
-  timeCount.value = null;
 });
 const showGamePopupTip = (str) => {
   dialogGameVisible.value = true;
@@ -344,6 +318,7 @@ const handleMatchData = async function (str, callback) {
       .then((res) => {
         if (res.data.code == 10000) {
           getIntegral();
+          emits("childEvent");
           callback("true");
         } else {
           callback(res.data.message);
@@ -382,8 +357,7 @@ const getIntegral = () => {
         localStorage.setItem("myIntergral", res.data.result.number);
         localStorage.setItem("matchCount", res.data.result.match_count);
         localStorage.setItem("matchLevel", res.data.result.match_level);
-        myIntergral.value = localStorage.getItem("myIntergral");
-        console.log(myIntergral.value, "我的最新积分");
+        myIntergral.value = res.data.result.number;
       } else {
         ElMessage.error("未登录吗？");
       }

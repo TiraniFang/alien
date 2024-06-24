@@ -4,6 +4,7 @@ import { createRouter, createWebHashHistory  } from 'vue-router'
 const routes = [
       {
         path: '/',
+        name: 'login',
         redirect: '/login',
         component: () => import(/* webpackChunkName: "/" */ '../views/login/index.vue'),
         // beforeRouteEnter: (to, from, next) => {
@@ -19,6 +20,9 @@ const routes = [
         path: '/home',
         name: 'Home',
         component: () => import(/* webpackChunkName: "home" */ '../views/home/index.vue'),
+        meta: {
+          keepalive: true
+        },
         beforeRouteEnter: (to, from, next) => {
           console.log(to)
             if (localStorage.getItem('loginStatus')) {
@@ -31,18 +35,30 @@ const routes = [
       {
         path: '/gift',
         name: 'Gift',
+        meta: {
+          keepalive: true
+        },
         component: () => import(/* webpackChunkName: "gift" */ '../views/gift/index.vue')
       },{
         path: '/match',
         name: 'Match',
+        meta: {
+          keepalive: true
+        },
         component: () => import(/* webpackChunkName: "match" */ '../views/match/index.vue')
       },{
         path: '/shop',
         name: 'Shop',
+        meta: {
+          keepalive: true
+        },
         component: () => import(/* webpackChunkName: "shop" */ '../views/shop/index.vue')
       },{
         path: '/user',
         name: 'User',
+        meta: {
+          keepalive: true
+        },
         component: () => import(/* webpackChunkName: "user" */ '../views/user/index.vue')
       },
 
@@ -60,5 +76,7 @@ const router = createRouter({
   history: createWebHashHistory(process.env.BASE_URL),
   routes
 })
+
+
 
 export default router

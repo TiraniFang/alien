@@ -1,5 +1,5 @@
 <template>
-  <div class="login">
+  <div class="login" v-drag>
     <!-- <video loop autoplay ref="video" @loadedmetadata="playVideo" muted="true">
       <source src="../../assets/yjwj.mp4" type="video/mp4" />
     </video> -->
@@ -279,7 +279,6 @@ const getIntegral = () => {
         localStorage.setItem("myIntergral", res.data.result.number);
         localStorage.setItem("matchCount", res.data.result.match_count);
         localStorage.setItem("matchLevel", res.data.result.match_level);
-        // myIntergral.value = localStorage.getItem("myIntergral");
       } else {
         ElMessage.error("未登录吗？");
       }

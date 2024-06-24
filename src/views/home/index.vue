@@ -1,5 +1,5 @@
 <template>
-  <Header v-drag @childEvent="getTaskList" />
+  <Header v-drag @childEvent="getTaskList" :intergral="myIntergral" />
   <div v-drag class="home">
     <div class="layout"></div>
     <div class="container">
@@ -57,11 +57,11 @@
             <router-link class="toGift" to="/gift">查看全部</router-link>
           </div>
           <div class="flex space-between">
-            <div class="item" v-for="(item, index) in taskList" :key="item">
+            <div class="item">
               <img class="icon" src="../../assets/coin.png" alt="" />
-              <!-- <img class="icon" v-else src="../../assets/rebbag.png" alt="" /> -->
-
-              <div class="title">奖励{{ item.rewardIntegral }}{{ item.type }}</div>
+              <div class="title" v-if="taskList.length > 0">
+                奖励{{ taskList[0].rewardIntegral }}{{ taskList[0].type }}
+              </div>
               <div class="bottom">
                 <div class="flex align-center">
                   <p>任务要求：</p>
@@ -75,16 +75,47 @@
                     /></el-icon>
                   </div>
                 </div>
-                <p>当前进度：{{ item.finish }}/{{ item.total }}</p>
+                <p v-if="taskList.length > 0">
+                  当前进度：{{ taskList[0].finish }}/{{ taskList[0].total }}
+                </p>
                 <!-- <div class="btn none" v-if="item.status == 0">未完成</div> -->
-                <div class="btn" v-if="item.status == 1">已发放</div>
+                <div class="btn" v-if="taskList.length > 0 && taskList[0].status == 1">
+                  已发放
+                </div>
+              </div>
+            </div>
+            <div class="item">
+              <img class="icon" src="../../assets/coin.png" alt="" />
+              <div class="title" v-if="taskList.length > 0">
+                奖励{{ taskList[1].rewardIntegral }}{{ taskList[1].type }}
+              </div>
+              <div class="bottom">
+                <div class="flex align-center">
+                  <p>任务要求：</p>
+                  <div
+                    class="flex align-center"
+                    style="cursor: pointer"
+                    @click="showRuleDialog = true"
+                  >
+                    点击查看任务要求详情<el-icon color="#6b3c11" :size="18"
+                      ><QuestionFilled
+                    /></el-icon>
+                  </div>
+                </div>
+                <p v-if="taskList.length > 0">
+                  当前进度：{{ taskList[1].finish }}/{{ taskList[1].total }}
+                </p>
+                <!-- <div class="btn none" v-if="item.status == 0">未完成</div> -->
+                <div class="btn" v-if="taskList.length > 0 && taskList[1].status == 1">
+                  已发放
+                </div>
               </div>
             </div>
             <div class="item">
               <img class="icon" src="../../assets/coin.png" alt="" />
               <!-- <img class="icon" src="../../assets/rebbag.png" alt="" /> -->
 
-              <div class="title">
+              <div class="title" v-if="taskList.length > 0">
                 奖励{{ lastReward.rewardIntegral }}{{ lastReward.type }}
               </div>
               <div class="bottom">
@@ -100,9 +131,13 @@
                     /></el-icon>
                   </div>
                 </div>
-                <p>当前进度：{{ lastReward.finish }}/{{ lastReward.total }}</p>
+                <p v-if="taskList.length > 0">
+                  当前进度：{{ lastReward.finish }}/{{ lastReward.total }}
+                </p>
                 <!-- <div class="btn none" v-if="item.status == 0">未完成</div> -->
-                <div class="btn" v-if="lastReward.status == 1">已发放</div>
+                <div class="btn" v-if="taskList.length > 0 && lastReward.status == 1">
+                  已发放
+                </div>
               </div>
             </div>
           </div>
@@ -126,6 +161,11 @@
     </el-dialog>
   </div>
 </template>
+<script>
+export default {
+  name: "Home",
+};
+</script>
 <script setup>
 import { ref, onBeforeUnmount, reactive } from "vue";
 import Header from "@/components/header.vue";
@@ -136,15 +176,15 @@ import { ElMessage } from "element-plus";
 import api from "../../api/request";
 import { useRouter } from "vue-router";
 import { Swiper, SwiperSlide } from "swiper/vue";
+import "swiper/swiper.min.css";
 import SwiperCore, { Autoplay, EffectFade } from "swiper";
 SwiperCore.use([Autoplay, EffectFade]);
 // Import Swiper styles
-import "swiper/swiper.min.css";
 const router = useRouter();
 // 当前游戏索引
 const currentIndex = ref(0);
 const gameIndex = ref(0);
-
+const myIntergral = ref(localStorage.getItem("myIntergral"));
 const btnMsg = ref("开始游戏");
 const dialogGameVisible = ref(false);
 const info = ref(null);
@@ -159,15 +199,6 @@ const timer = ref(null);
 const timer2 = ref(null);
 const lastReward = ref({});
 
-// const swiperOptions = ref({
-//   // 所有Swiper选项都可以在这里设置
-//   // 例如：自动播放
-//   effect: "fade",
-//   autoplay: {
-//     delay: 100,
-//     disableOnInteraction: false,
-//   },
-// });
 onBeforeUnmount(() => {
   // clearInterval(timer2.value);
   clearInterval(timer.value);

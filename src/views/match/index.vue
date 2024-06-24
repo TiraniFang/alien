@@ -1,11 +1,11 @@
 <template>
-  <Header v-drag />
+  <Header v-drag :intergral="myIntergral" @childEvent="getMatchData" />
   <div class="match">
     <div class="match-title" v-drag>
       <!-- <img src="../../assets/match-title.png" alt=""> -->
       <div class="flex align-center" v-if="timeCount != null">
         <span>闯关倒计时：</span>
-        <el-countdown class="count2" :value="timeCount" />
+        <el-countdown class="count2" :value="timeCount" @finish="finished" />
       </div>
     </div>
     <div class="container" @mousedown="startDrag" @mousemove="doDrag" @mouseup="endDrag">
@@ -125,8 +125,13 @@
     <Rules v-if="showRuleDialog" @closeRules="showRuleDialog = false" />
   </div>
 </template>
+<script>
+export default {
+  name: "Match",
+};
+</script>
 <script setup>
-import { ref, onBeforeUnmount, onMounted, nextTick } from "vue";
+import { ref, onBeforeUnmount, onMounted, nextTick, onActivated } from "vue";
 import Header from "@/components/header.vue";
 
 import { ElMessage } from "element-plus";
@@ -147,12 +152,9 @@ const showArrowTip = ref(false);
 const passList = ref([]);
 const currentIndex = ref(-1);
 const aniIndex = ref(-1);
-
 const totalNumber = ref(1);
 const choose = (item, index) => {
-  console.log(index);
   aniIndex.value = index;
-  console.log(aniIndex.value);
   if (index != matchData.value.Level && !passList.value.includes(index)) {
     needIntergral.value = (index + 1) * matchData.value.BasePoint;
     rewardMoney.value = (index + 1) * matchData.value.BaseAmount;
@@ -170,7 +172,6 @@ const choose = (item, index) => {
     ElMessage.success("当前关卡已通过");
   }
 };
-
 onMounted(async () => {
   getMatchData();
 
@@ -178,10 +179,7 @@ onMounted(async () => {
   if (containers.value) {
     containers.value.scrollLeft = 810;
   }
-  console.log(localStorage.getItem("fistLogin"));
   if (localStorage.getItem("fistLogin") == "true") {
-    console.log(localStorage.getItem("fistLogin"));
-
     showArrowTip.value = true;
     let t = setTimeout(() => {
       localStorage.setItem("fistLogin", false);
@@ -213,6 +211,9 @@ const doDrag = (event) => {
 const endDrag = () => {
   dragging.value = false;
 };
+const finished = () => {
+  window.location.reload();
+};
 // 获取关卡数据
 const getMatchData = () => {
   api
@@ -225,7 +226,6 @@ const getMatchData = () => {
       totalNumber.value = currentIndex.value + 1;
       needIntergral.value = (matchData.value.Level + 1) * matchData.value.BasePoint;
       rewardMoney.value = (currentIndex.value + 1) * matchData.value.BaseAmount;
-
       if (matchData.value.expires != 0) {
         timeCount.value = Date.now() + matchData.value.expires * 1000;
       }
@@ -242,7 +242,6 @@ const getMatchData = () => {
       // matchData.value.max_number = 20;
       // matchData.value.Level = 17;
       // matchData.value.InLevel = 17;
-
       for (let i = 0; i <= matchData.value.Level; i++) {
         passList.value.push(i);
       }
@@ -255,7 +254,6 @@ const getMatchData = () => {
       }
       let t = setTimeout(() => {
         containers.value.scrollLeft = (matchData.value.Level - 6) * 220;
-        console.log(containers.value.scrollLeft);
         clearTimeout(t);
       }, 200);
     });
@@ -273,6 +271,9 @@ const getStart = () => {
         dialogVisible.value = false;
         if (res.data.code == 10000) {
           myIntergral.value = Number(myIntergral.value) - Number(needIntergral.value);
+          // localStorage.setItem("myIntergral", myIntergral.value);
+          getIntegral();
+          getMatchData();
           ElMessage.success("报名成功！");
         } else {
           ElMessage.error(res.data.message);

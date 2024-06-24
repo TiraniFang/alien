@@ -1,17 +1,24 @@
 <template>
-  <Header   v-drag  />
-  <div class="gift" v-drag >
+  <Header v-drag :intergral="myIntergral" />
+  <div class="gift" v-drag>
     <div>
-      <img src="../../assets/login-ewm.png" alt="">
+      <img src="../../assets/login-ewm.png" alt="" />
       <p>微信扫一扫打开积分商城</p>
-      <p style="color: #e1e1e1;font-size: 12px">(任何有关 领奖 / 兑换 的问题可咨询客服)</p>
+      <p style="color: #e1e1e1; font-size: 12px">
+        (任何有关 领奖 / 兑换 的问题可咨询客服)
+      </p>
     </div>
-    
   </div>
 </template>
+<script>
+export default {
+  name: "Shop",
+};
+</script>
 <script setup>
-import Header from '@/components/header.vue';
-
+import { ref } from "vue";
+import Header from "@/components/header.vue";
+const myIntergral = ref(localStorage.getItem("myIntergral"));
 </script>
 <style lang="scss" scoped>
 .gift {
@@ -24,7 +31,7 @@ import Header from '@/components/header.vue';
   display: flex;
   justify-content: center;
   align-items: center;
-    text-align: center;
+  text-align: center;
   img {
     max-width: 200px;
     margin-right: 0;

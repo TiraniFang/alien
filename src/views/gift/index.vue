@@ -1,5 +1,5 @@
 <template>
-  <Header v-drag @childEvent="getTaskList" />
+  <Header v-drag @childEvent="getTaskList" :intergral="myIntergral" />
   <div v-drag class="gift">
     <div class="layout"></div>
     <div class="gray"></div>
@@ -27,13 +27,8 @@
       <div class="all-gift">
         <div class="flex space-between flex-wrap">
           <div class="item" v-for="(item, index) in taskList" :key="item">
-            <img
-              class="icon"
-              v-if="item.type == '积分'"
-              :src="require('../../assets/coin.png')"
-              alt=""
-            />
-            <img class="icon" v-else :src="require('../../assets/rebbag.png')" alt="" />
+            <img class="icon" :src="require('../../assets/coin.png')" alt="" />
+            <!-- <img class="icon" v-else :src="require('../../assets/rebbag.png')" alt="" /> -->
             <div class="title">奖励{{ item.rewardIntegral }}{{ item.type }}</div>
             <div class="bottom">
               <div class="flex align-center">
@@ -64,6 +59,11 @@
     <Rules v-if="showRuleDialog" @closeRules="showRuleDialog = false" />
   </div>
 </template>
+<script>
+export default {
+  name: "Gift",
+};
+</script>
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import api from "../../api/request";
@@ -73,10 +73,75 @@ import Header from "@/components/header.vue";
 
 import { ElMessage } from "element-plus";
 import { QuestionFilled } from "@element-plus/icons-vue";
+const myIntergral = ref(localStorage.getItem("myIntergral"));
 
 const showGiftDialog = ref(false);
 const showRuleDialog = ref(false);
-const taskList = ref([]);
+const taskList = ref([
+  {
+    type: "积分",
+    rewardIntegral: 0,
+    finish: 0,
+    total: 0,
+    status: 0,
+  },
+  {
+    type: "积分",
+    rewardIntegral: 0,
+    finish: 0,
+    total: 0,
+    status: 0,
+  },
+  {
+    type: "积分",
+    rewardIntegral: 0,
+    finish: 0,
+    total: 0,
+    status: 0,
+  },
+  {
+    type: "积分",
+    rewardIntegral: 0,
+    finish: 0,
+    total: 0,
+    status: 0,
+  },
+  {
+    type: "积分",
+    rewardIntegral: 0,
+    finish: 0,
+    total: 0,
+    status: 0,
+  },
+  {
+    type: "积分",
+    rewardIntegral: 0,
+    finish: 0,
+    total: 0,
+    status: 0,
+  },
+  {
+    type: "积分",
+    rewardIntegral: 0,
+    finish: 0,
+    total: 0,
+    status: 0,
+  },
+  {
+    type: "积分",
+    rewardIntegral: 0,
+    finish: 0,
+    total: 0,
+    status: 0,
+  },
+  {
+    type: "积分",
+    rewardIntegral: 0,
+    finish: 0,
+    total: 0,
+    status: 0,
+  },
+]);
 const currentGift = ref({});
 const timeCount = ref(null);
 const timer2 = ref(null);
@@ -111,22 +176,6 @@ const getTaskList = () => {
     .then((res) => {
       console.log(res);
       taskList.value = res.data.result;
-    });
-};
-// timer2.value = setInterval(() => {
-//   getTaskList();
-// }, 1000);
-// 领取任务
-const getReward = (id) => {
-  api
-    .post("/method/account/", {
-      method: "REQUEST_QUEST_REWARD",
-      id: id,
-    })
-    .then((res) => {
-      if (res.data.code == 10000) {
-        showGiftDialog.value = true;
-      }
     });
 };
 getTaskList();
