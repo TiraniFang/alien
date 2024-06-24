@@ -55,10 +55,10 @@
       <el-tooltip
         class="box-item"
         effect="dark"
-        content="点击回到当前关卡"
+        content="点击重置到第一关"
         placement="top"
       >
-        <p class="returnCurrent" @click="getMatchData">
+        <p class="returnCurrent" @click="dialogResetVisible = true">
           <el-icon size="22"><RefreshLeft /></el-icon>
         </p>
       </el-tooltip>
@@ -122,6 +122,17 @@
         </div>
       </template>
     </el-dialog>
+    <el-dialog v-model="dialogResetVisible" title="重置提示" width="500" center>
+      <p style="text-align: center; height: 50px; light-height: 50px">
+        确定消耗<span style="color: #ffd44a">100</span>积分重置关卡到第一关吗?
+      </p>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="dialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="resetMatch"> 确定 </el-button>
+        </div>
+      </template>
+    </el-dialog>
     <Rules v-if="showRuleDialog" @closeRules="showRuleDialog = false" />
   </div>
 </template>
@@ -141,6 +152,7 @@ import Rules from "../home/components/rules.vue";
 import { QuestionFilled, RefreshLeft } from "@element-plus/icons-vue";
 
 const timer = ref(null);
+const dialogResetVisible = ref(false);
 const showRuleDialog = ref(false);
 const allNumArray = ref([]);
 const timeCount = ref(null);
@@ -154,6 +166,7 @@ const currentIndex = ref(-1);
 const aniIndex = ref(-1);
 const totalNumber = ref(1);
 const choose = (item, index) => {
+  console.log(item);
   aniIndex.value = index;
   if (index != matchData.value.Level && !passList.value.includes(index)) {
     needIntergral.value = (index + 1) * matchData.value.BasePoint;
@@ -165,12 +178,40 @@ const choose = (item, index) => {
     } else {
       rewardMoney.value = (index + 1) * matchData.value.BaseAmount;
     }
+
+    // 查询当前关卡有多少人参加
+    api
+      .post("/method/stage/", {
+        method: "GET_STAGE_NUMBER",
+        level: item,
+      })
+      .then((res) => {
+        matchData.value.matchingNumber = res.data.result.number;
+      });
+
     return;
   } else if (currentIndex.value == index) {
     getMatchData();
   } else {
     ElMessage.success("当前关卡已通过");
   }
+};
+
+// 重置关卡到第一关
+const resetMatch = () => {
+  api
+    .post("/method/stage/", {
+      method: "STAGE_RESET",
+    })
+    .then((res) => {
+      if (res.data.code == 10000) {
+        ElMessage.success("重置成功！");
+        getMatchData();
+      } else {
+        ElMessage.error(res.data.message);
+      }
+      dialogResetVisible.value = false;
+    });
 };
 onMounted(async () => {
   getMatchData();
