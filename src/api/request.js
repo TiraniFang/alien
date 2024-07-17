@@ -23,7 +23,6 @@ service.interceptors.request.use(
   },
   error => {
     // 请求错误处理
-    console.log(error); // for debug
     Promise.reject(error);
   }
 );

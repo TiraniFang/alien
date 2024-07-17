@@ -1,5 +1,6 @@
 <template>
-  <Header v-drag @childEvent="getTaskList" :intergral="myIntergral" />
+  <!-- @childEvent="getTaskList" -->
+  <Header v-drag :intergral="myIntergral" @childEvent="refreshData" />
   <div v-drag class="home">
     <div class="layout"></div>
     <div class="container">
@@ -42,7 +43,8 @@
           btnMsg
         }}</el-button> -->
       </div>
-      <div class="task">
+      <!-- 福利任务 -->
+      <!-- <div class="task">
         <div class="container">
           <div class="flex space-between">
             <div class="title flex align-center">
@@ -52,7 +54,6 @@
                   (积分可用于闯关和商城兑换奖品)
                 </span></span
               >
-              <!-- <span class="rule" @click="showRuleDialog = true">[活动规则]</span> -->
             </div>
             <router-link class="toGift" to="/gift">查看全部</router-link>
           </div>
@@ -78,7 +79,6 @@
                 <p v-if="taskList.length > 0">
                   当前进度：{{ taskList[0].finish }}/{{ taskList[0].total }}
                 </p>
-                <!-- <div class="btn none" v-if="item.status == 0">未完成</div> -->
                 <div class="btn" v-if="taskList.length > 0 && taskList[0].status == 1">
                   已发放
                 </div>
@@ -105,7 +105,6 @@
                 <p v-if="taskList.length > 0">
                   当前进度：{{ taskList[1].finish }}/{{ taskList[1].total }}
                 </p>
-                <!-- <div class="btn none" v-if="item.status == 0">未完成</div> -->
                 <div class="btn" v-if="taskList.length > 0 && taskList[1].status == 1">
                   已发放
                 </div>
@@ -113,7 +112,6 @@
             </div>
             <div class="item">
               <img class="icon" src="../../assets/coin.png" alt="" />
-              <!-- <img class="icon" src="../../assets/rebbag.png" alt="" /> -->
 
               <div class="title" v-if="taskList.length > 0">
                 奖励{{ lastReward.rewardIntegral }}{{ lastReward.type }}
@@ -134,11 +132,59 @@
                 <p v-if="taskList.length > 0">
                   当前进度：{{ lastReward.finish }}/{{ lastReward.total }}
                 </p>
-                <!-- <div class="btn none" v-if="item.status == 0">未完成</div> -->
                 <div class="btn" v-if="taskList.length > 0 && lastReward.status == 1">
                   已发放
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </div> -->
+      <div class="competiton">
+        <div class="container">
+          <div class="flex space-between">
+            <div class="title flex align-center">
+              <img src="../../assets/task.png" alt="" />
+              <span
+                >比赛活动<span style="font-size: 12px"> (前三可获得现金奖励) </span></span
+              >
+              <!-- <span class="rule" @click="showRuleDialog = true">[活动规则]</span> -->
+            </div>
+            <router-link class="toGift" to="/competition">查看全部</router-link>
+          </div>
+          <div class="flex flex-wrap space-between">
+            <div class="item">
+              <h1>日赛奖励</h1>
+              <h2>
+                每日最高可获得<span>150元现金</span
+                ><img src="../../assets/rebbag2.png" alt="" />
+              </h2>
+              <p>时长/积分/游戏完成度排名，全服前三名获得奖励，每日凌晨00:00更新</p>
+              <router-link to="/rankInfo?type=day" class="checkMore"
+                >查看奖励详情</router-link
+              >
+            </div>
+            <div class="item">
+              <h1>周赛奖励</h1>
+              <h2>
+                每周最高可获得<span>900元现金</span
+                ><img src="../../assets/rebbag2.png" alt="" />
+              </h2>
+              <p>时长/积分/游戏完成度排名，全服前三名获得奖励，每周一凌晨00:00更新</p>
+              <router-link to="/rankInfo?type=week" class="checkMore"
+                >查看奖励详情</router-link
+              >
+            </div>
+            <div class="item">
+              <h1>月赛奖励</h1>
+              <h2>
+                每月最高可获得<span>1500元现金</span
+                ><img src="../../assets/rebbag2.png" alt="" />
+              </h2>
+              <p>时长/积分/游戏完成度排名，全服前三名获得奖励，每月1号凌晨00:00更新</p>
+              <router-link to="/rankInfo?type=month" class="checkMore"
+                >查看奖励详情</router-link
+              >
             </div>
           </div>
         </div>
@@ -205,6 +251,15 @@ onBeforeUnmount(() => {
   timer.value = null;
   // timer2.value = null;
 });
+window.addEventListener("storage", (event) => {
+  if (event.key === "myIntergral") {
+    myIntergral.value = event.newValue;
+  }
+});
+
+const refreshData = () => {
+  myIntergral.value = localStorage.getItem("myIntergral");
+};
 //指定swiper的设置
 let swiper_options = reactive({
   autoplay: {
@@ -295,7 +350,7 @@ const getTaskList = () => {
 if (!localStorage.getItem("loginStatus")) {
   router.replace("/login");
 } else {
-  getTaskList();
+  // getTaskList();
 }
 </script>
 <style lang="scss">
@@ -410,6 +465,79 @@ if (!localStorage.getItem("loginStatus")) {
       color: #573303;
       display: inline-block;
       margin-top: 50px;
+    }
+  }
+  .competiton {
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    color: #fff;
+    padding-bottom: 20px;
+    z-index: 2;
+    .rule {
+      color: rgb(228, 228, 228);
+      display: inline-block;
+      margin-left: 20px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .toGift {
+      color: rgb(228, 228, 228);
+      font-size: 14px;
+    }
+    .item {
+      width: 32%;
+      height: 215px;
+      background: url(../../assets/competition_bj2.png) no-repeat;
+      background-size: contain;
+      margin-top: 20px;
+    }
+    h1 {
+      color: #fff;
+      text-align: center;
+      font-size: 16px;
+      margin: 5px 0;
+    }
+    h2 {
+      text-align: center;
+      font-size: 14px;
+      font-weight: normal;
+      color: #fff;
+      margin-top: 20px;
+      span {
+        color: #ffc452;
+        font-size: 18px;
+      }
+      img {
+        width: 15px;
+        vertical-align: text-bottom;
+        display: inline-block;
+        margin-left: 10px;
+      }
+    }
+    p {
+      margin-top: 20px;
+      color: #d1d1d1;
+      text-align: center;
+      font-size: 12px;
+    }
+    .checkMore {
+      width: 100px;
+      height: 26px;
+      display: block;
+      border-radius: 4px;
+      background: #ff4553;
+      color: #fff;
+      text-align: center;
+      line-height: 26px;
+      font-size: 12px;
+      margin: 0 auto;
+      margin-top: 30px;
+      transition: all 0.2s;
+      &:hover {
+        background: #e13442;
+      }
     }
   }
   .task {

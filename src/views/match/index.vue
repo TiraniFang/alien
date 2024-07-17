@@ -1,5 +1,5 @@
 <template>
-  <Header v-drag :intergral="myIntergral" @childEvent="getMatchData" />
+  <Header v-drag :intergral="myIntergral" @childEvent="refreshData" />
   <div class="match">
     <div class="match-title" v-drag>
       <!-- <img src="../../assets/match-title.png" alt=""> -->
@@ -128,7 +128,7 @@
       </p>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="dialogVisible = false">取消</el-button>
+          <el-button @click="dialogResetVisible = false">取消</el-button>
           <el-button type="primary" @click="resetMatch"> 确定 </el-button>
         </div>
       </template>
@@ -167,8 +167,8 @@ const aniIndex = ref(-1);
 const totalNumber = ref(1);
 const choose = (item, index) => {
   console.log(item);
-  aniIndex.value = index;
   if (index != matchData.value.Level && !passList.value.includes(index)) {
+    aniIndex.value = index;
     needIntergral.value = (index + 1) * matchData.value.BasePoint;
     rewardMoney.value = (index + 1) * matchData.value.BaseAmount;
     totalNumber.value = index + 1;
@@ -206,6 +206,7 @@ const resetMatch = () => {
     .then((res) => {
       if (res.data.code == 10000) {
         ElMessage.success("重置成功！");
+        window.location.reload();
         getMatchData();
       } else {
         ElMessage.error(res.data.message);
@@ -252,6 +253,10 @@ const doDrag = (event) => {
 const endDrag = () => {
   dragging.value = false;
 };
+const refreshData = () => {
+  getIntegral();
+  getMatchData();
+};
 const finished = () => {
   window.location.reload();
 };
@@ -270,6 +275,15 @@ const getMatchData = () => {
       if (matchData.value.expires != 0) {
         timeCount.value = Date.now() + matchData.value.expires * 1000;
       }
+
+      api
+        .post("/method/stage/", {
+          method: "GET_STAGE_NUMBER",
+          level: matchData.value.Level,
+        })
+        .then((res) => {
+          matchData.value.matchingNumber = res.data.result.number;
+        });
       // const now = new Date();
       // const endOfDay = new Date(
       //   now.getFullYear(),
@@ -312,7 +326,6 @@ const getStart = () => {
         dialogVisible.value = false;
         if (res.data.code == 10000) {
           myIntergral.value = Number(myIntergral.value) - Number(needIntergral.value);
-          // localStorage.setItem("myIntergral", myIntergral.value);
           getIntegral();
           getMatchData();
           ElMessage.success("报名成功！");

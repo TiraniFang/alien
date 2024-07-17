@@ -1,10 +1,10 @@
 <template>
-  <!-- <router-view v-slot="{ Component }">
-    <keep-alive include="Match,Gift,Shop,Home,User,Header">
+  <router-view v-slot="{ Component }">
+    <keep-alive include="Match">
       <component :is="Component" />
     </keep-alive>
-  </router-view> -->
-  <router-view></router-view>
+  </router-view>
+  <!-- <router-view></router-view> -->
 </template>
 <script setup>
 import { ref, onMounted } from "vue";

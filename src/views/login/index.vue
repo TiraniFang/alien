@@ -1,8 +1,15 @@
 <template>
-  <div class="login" v-drag>
-    <!-- <video loop autoplay ref="video" @loadedmetadata="playVideo" muted="true">
+  <div v-drag class="login">
+    <video
+      loop
+      autoplay
+      ref="video"
+      @loadedmetadata="playVideo"
+      muted="true"
+      v-show="isConfirm"
+    >
       <source src="../../assets/yjwj.mp4" type="video/mp4" />
-    </video> -->
+    </video>
     <div class="min" @click="minimizeWindow('min')"></div>
     <div class="close" @click="minimizeWindow('min')"></div>
     <div class="title flex align-center">
@@ -25,38 +32,58 @@
         </ul>
       </div>-->
     </div>
-    <div class="containers" ref="containers">
-      <!-- 这里放置你的超长内容 -->
-      <div class="content" v-for="(item, index) in maxNumber" :key="item">
-        <div class="box">
-          <div
-            class="current"
-            v-if="
-              currentIndex == passList[passList.length - 1] && passList.includes(item)
-            "
-          ></div>
-          <div class="line" v-if="passList.includes(item)"></div>
-          <div
-            class="item"
-            :class="{
-              pass: passList.includes(item),
-              ani: currentIndex == item,
-            }"
-          >
-            <!-- 'current': item.currentGuan && currentIndex == index -->
-            <div class="redbag" @click="confirm">
-              <img src="../../assets/rebbag3.png" alt="" />
-              <span>969.6</span>
-              <img class="arrow" src="../../assets/arrow.png" alt="" />
+    <div class="swiper" v-if="!isConfirm && loginEwm == ''">
+      <!-- :autoplay="swiper_options.autoplay" -->
+
+      <swiper
+        slides-per-view="1"
+        :speed="swiper_options.speed"
+        :loop="swiper_options.loop"
+        :autoplay="swiper_options.autoplay"
+      >
+        <swiper-slide>
+          <img class="bg" src="../../assets/match_bj3.jpg" alt="" />
+        </swiper-slide>
+        <swiper-slide style="background: url(../../assets/match_bj.jpg) no-repeat">
+          <img class="bg" src="../../assets/match_bj.jpg" alt="" />
+          <div class="containers" ref="containers">
+            <!--  -->
+            <!-- 这里放置你的超长内容 -->
+            <div class="content" v-for="(item, index) in maxNumber" :key="item">
+              <div class="box">
+                <div
+                  class="current"
+                  v-if="
+                    currentIndex == passList[passList.length - 1] &&
+                    passList.includes(item)
+                  "
+                ></div>
+                <div class="line" v-if="passList.includes(item)"></div>
+                <div
+                  class="item"
+                  :class="{
+                    pass: passList.includes(item),
+                    ani: currentIndex == item,
+                  }"
+                >
+                  <!-- 'current': item.currentGuan && currentIndex == index -->
+                  <div class="redbag" @click="confirm">
+                    <img src="../../assets/rebbag3.png" alt="" />
+                    <span>969.6</span>
+                    <img class="arrow" src="../../assets/arrow.png" alt="" />
+                  </div>
+                  <h3>关卡</h3>
+                  <h2>{{ item }}</h2>
+                </div>
+              </div>
             </div>
-            <h3>关卡</h3>
-            <h2>{{ item }}</h2>
           </div>
-        </div>
-      </div>
+        </swiper-slide>
+      </swiper>
     </div>
+
     <div class="confirm" :class="{ hide: isConfirm }" @click="confirm">
-      <p>点击开始闯关</p>
+      <p>点击去获取奖励</p>
     </div>
     <el-dialog v-model="dialogVisible" title="关闭窗口" width="500">
       <span>确认关闭程序吗？</span>
@@ -78,11 +105,15 @@
   </div>
 </template>
 <script setup>
-import { ref, onBeforeUnmount, onMounted } from "vue";
+import { ref, onBeforeUnmount, onMounted, reactive } from "vue";
 import axios from "axios";
 import api from "../../api/request";
 import { ElMessage } from "element-plus";
 import { useRouter } from "vue-router";
+import { Swiper, SwiperSlide } from "swiper/vue";
+import "swiper/swiper.min.css";
+import SwiperCore, { Autoplay, EffectFade } from "swiper";
+SwiperCore.use([Autoplay, EffectFade]);
 const video = ref(null);
 const dialogGameVisible = ref(false);
 const message = ref("");
@@ -93,30 +124,37 @@ const loginEwm = ref("");
 const timer = ref(null);
 const info = ref(null);
 const info2 = ref(null);
+const banner1 = ref(require("../../assets/match_bj.jpg"));
 // const timer2 = ref(null);
 const maxNumber = ref([603, 604, 605, 606, 607, 608, 609]);
 const passList = ref([603, 604, 605, 606]);
 const currentIndex = ref(606);
 const allNumArray = ref([100, 200, 300, 400, 500, 600, 700]);
+const hideLogin = ref(false);
 onMounted(async () => {
   if (window.client) {
     window.handleMatchData = handleMatchData;
     window.minimizeWindow = minimizeWindow;
     window.showGamePopupTip = showGamePopupTip;
-    // try {
-    //   const result = await window.handleMatchData();
-    //   console.log("Result from handleMatchData", result);
-    // } catch (error) {
-    //   console.log("Error", error);
-    // }
   } else {
     console.log("Java bridge not found");
   }
 });
 const showGamePopupTip = (str) => {
   dialogGameVisible.value = true;
+  hideLogin.value = true;
   message.value = str;
 };
+//指定swiper的设置
+let swiper_options = reactive({
+  autoplay: {
+    delay: 2000,
+    disableOnInteraction: false,
+  },
+  effect: "fade",
+  loop: true,
+  speed: 1000,
+});
 // const playVideo = () => {
 //   timer2.value = setTimeout(() => {
 //     video.value && video.value.play();
@@ -143,7 +181,6 @@ const callJavaMethod = () => {
   if (window.client) {
     try {
       const jsonString = window.client.getClientInfo();
-      console.log("Received JSON from Java:", jsonString);
       const data = JSON.parse(jsonString);
       console.log("Parsed JSON Data:", data);
       info.value = data;
@@ -176,6 +213,7 @@ const minimizeWindow = (str) => {
 
 // 一：客户端信息获取
 const getClientInfo = () => {
+  localStorage.setItem("netbarId", info.value.id);
   api
     .post("/method/client/", {
       method: "GET_CLIENT_INFO",
@@ -216,8 +254,6 @@ const getStatus = () => {
     })
     .then((res) => {
       // 如果未登录则返回二维码扫码和number
-      console.log(res);
-
       if (res.data.message == "未登陆") {
         localStorage.setItem("numberToken", res.data.result.number);
         loginEwm.value = res.data.result.url;
@@ -239,7 +275,6 @@ const checkLoginStatus = (n) => {
       number: n,
     })
     .then((res) => {
-      console.log(res);
       if (res.data.code == 10000) {
         ElMessage.success("登录成功！");
         getIntegral();
@@ -279,6 +314,7 @@ const getIntegral = () => {
         localStorage.setItem("myIntergral", res.data.result.number);
         localStorage.setItem("matchCount", res.data.result.match_count);
         localStorage.setItem("matchLevel", res.data.result.match_level);
+        localStorage.setItem("wid", res.data.result.wid);
       } else {
         ElMessage.error("未登录吗？");
       }
@@ -306,7 +342,7 @@ getClientVersion();
   height: 100%;
   // background: url(../../assets/login-bj2.jpg) no-repeat center;
   // background-size: cover;
-  background: url(../../assets/match_bj.jpg) no-repeat center bottom;
+  // background: url(../../assets/match_bj.jpg) no-repeat center bottom;
   background-size: cover;
   background-position: center top;
   background-repeat: no-repeat;
@@ -401,6 +437,13 @@ getClientVersion();
     display: none;
   }
 }
+.bg {
+  width: 100vw;
+  height: 100vh;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
 .containers {
   overflow-x: hidden;
   overflow-y: auto;
@@ -408,8 +451,10 @@ getClientVersion();
   padding-top: 320px;
   padding-bottom: 20px;
   position: relative;
-  max-width: 1440px;
   margin: 0 auto;
+  height: 100%;
+  height: 100%;
+  box-sizing: border-box;
 }
 .content {
   display: inline-block;
@@ -581,7 +626,21 @@ getClientVersion();
     z-index: 0;
   }
 }
-
+.swiper {
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  .swiper-slide {
+    height: 100vh;
+    background-size: cover;
+    background-position: center top;
+    background-repeat: no-repeat;
+    position: relative;
+  }
+}
 @keyframes beforeAni {
   0% {
     width: 0;

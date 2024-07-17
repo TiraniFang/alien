@@ -33,6 +33,8 @@
                 start-placeholder="开始日期"
                 end-placeholder="结束日期"
                 @change="getTime"
+                format="YYYY/MM/DD hh:mm:ss"
+                value-format="YYYY-MM-DD h:m:s"
                 clearable
               />
             </div>
@@ -147,7 +149,10 @@
                   <template #default="scope">
                     <p
                       style="color: #e15151"
-                      v-if="scope.row.remark == '外星人高端玩家联盟-关卡挑战'"
+                      v-if="
+                        scope.row.remark == '外星人高端玩家联盟-关卡挑战' ||
+                        scope.row.remark == '外星人高端玩家联盟-重置关卡'
+                      "
                     >
                       消耗积分
                     </p>
@@ -222,6 +227,78 @@
                 <el-button
                   style="margin-top: 20px; margin-left: 20px"
                   @click="getCashLog"
+                  alt="刷新"
+                  ><el-icon><RefreshRight /></el-icon
+                ></el-button>
+              </div>
+            </div>
+            <el-empty description="暂无记录" v-else />
+          </div>
+          <div v-if="currentIndex == 3">
+            <div v-if="currentIndex == 3 && table4.length > 0">
+              <el-table :data="table4" style="width: 100%" align="center">
+                <el-table-column label="奖励类型" prop="Type" align="center">
+                  <template #default="scope">
+                    {{ scope.row.Type == 1 ? "平台排名奖励" : "网吧排名奖励" }}
+                  </template>
+                </el-table-column>
+                <el-table-column label="奖励排行类型" prop="RankType" align="center">
+                  <template #default="scope">
+                    {{
+                      scope.row.RankType == 1
+                        ? "日赛排行"
+                        : scope.row.RankType == 2
+                        ? "周赛排行"
+                        : "月赛排行"
+                    }}
+                  </template>
+                </el-table-column>
+                <el-table-column label="排行类型" prop="SubRankType" align="center">
+                  <template #default="scope">
+                    {{
+                      scope.row.SubRankType == 1
+                        ? "在线时长排行"
+                        : scope.row.SubRankType == 2
+                        ? "积分排行"
+                        : "完成度排行"
+                    }}
+                  </template>
+                </el-table-column>
+                <el-table-column label="排名" prop="Rank" align="center" />
+                <el-table-column label="奖励类型" prop="PrizeType" align="center">
+                  <template #default="scope">
+                    {{ scope.row.Type == 1 ? "现金" : "网费" }}
+                  </template>
+                </el-table-column>
+
+                <el-table-column label="获得额度" prop="Number" align="center">
+                  <template #default="scope">
+                    <div class="flex align-center space-center">
+                      <img style="width: 30px" src="../../assets/rebbag.png" alt="" />
+                      <p>{{ scope.row.Number }}元</p>
+                    </div>
+                  </template>
+                </el-table-column>
+                <el-table-column label="卷码发放状态" prop="Status" align="center">
+                  <template #default="scope">
+                    <el-tag type="error" v-if="scope.row.Status == 0">发放失败</el-tag>
+                    <el-tag type="success" v-if="scope.row.Status == 1">发放成功</el-tag>
+                    <el-tag type="info" v-if="scope.row.Status == 2">未发放</el-tag>
+                  </template>
+                </el-table-column>
+                <el-table-column label="获得时间" prop="LogDate" align="center" />
+              </el-table>
+              <div class="text-center flex space-center align-center">
+                <el-pagination
+                  background
+                  :page-size="pageSize4"
+                  layout="prev, pager, next, total"
+                  :total="total"
+                  @current-change="currentChange"
+                />
+                <el-button
+                  style="margin-top: 20px; margin-left: 20px"
+                  @click="getRankLog"
                   alt="刷新"
                   ><el-icon><RefreshRight /></el-icon
                 ></el-button>
@@ -307,26 +384,30 @@ const total = ref(0);
 const pageSize = ref(6);
 const pageSize2 = ref(8);
 const pageSize3 = ref(6);
+const pageSize4 = ref(6);
 
 const currentPage = ref(1);
-
-const tabs = ref(["游戏记录", "积分记录", "现金记录"]);
+// , "比赛奖励记录"
+const tabs = ref(["游戏记录", "积分记录", "闯关奖励记录"]);
 const table = ref([]);
 const table2 = ref([]);
 const table3 = ref([]);
+const table4 = ref([]);
 
 onMounted(() => {
-  console.log(route, " route");
+  isCurrentPath(route.hash);
 });
 watch(
   () => route.hash,
   (hash) => {
-    console.log(hash);
-
     isCurrentPath(hash);
   }
 );
-
+window.addEventListener("storage", (event) => {
+  if (event.key === "myIntergral") {
+    myIntergral.value = event.newValue;
+  }
+});
 const formatDuration = (seconds) => {
   let hours = Math.floor(seconds / 3600);
   let minutes = Math.floor((seconds % 3600) / 60);
@@ -345,10 +426,7 @@ const formatDuration = (seconds) => {
 
   return duration.trim();
 };
-const giftDialogShow = (item) => {
-  showGiftDialog.value = true;
-  currentGift.value = item;
-};
+
 const isCurrentPath = (path) => {
   switch (path) {
     case "#match":
@@ -360,8 +438,9 @@ const isCurrentPath = (path) => {
     case "#gift":
       currentIndex.value = 2;
       break;
-    default:
+    case "#rank":
       currentIndex.value = 3;
+      getRankLog();
   }
 };
 const switchTab = (index) => {
@@ -371,9 +450,24 @@ const switchTab = (index) => {
     getMatchLog();
   } else if (index == 1) {
     getInteraLog();
-  } else {
+  } else if (index == 2) {
     getCashLog();
+  } else {
+    getRankLog();
   }
+};
+
+const getRankLog = () => {
+  api
+    .post("/method/account/", {
+      method: "GET_RANK_REWARD_INFO",
+      page: currentPage.value,
+      size: 6,
+    })
+    .then((res) => {
+      table4.value = res.data.result.data;
+      total.value = res.data.result.count;
+    });
 };
 
 const getTime = (v) => {
@@ -392,8 +486,10 @@ const currentChange = (v) => {
     getMatchLog();
   } else if (currentIndex.value == 1) {
     getInteraLog();
-  } else {
+  } else if (currentIndex.value == 2) {
     getCashLog();
+  } else {
+    getRankLog();
   }
 };
 // 获取比赛记录
@@ -421,7 +517,6 @@ const getMatchLog = () => {
         });
       });
       loading.value = false;
-      console.log(table.value);
     });
 };
 // 获取积分记录
@@ -505,7 +600,6 @@ const getChampionByID = async (name, language = "zh_CN") => {
 
 const main = async (id) => {
   const info = await getChampionByKey(id, "zh_CN");
-  console.log(info);
   infos.value = true;
   return info;
 };

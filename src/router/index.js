@@ -24,13 +24,20 @@ const routes = [
           keepalive: true
         },
         beforeRouteEnter: (to, from, next) => {
-          console.log(to)
             if (localStorage.getItem('loginStatus')) {
               next()
             } else {
               next({path: '/login'})
             }
         }
+      },
+      {
+        path: '/match',
+        name: 'Match',
+        meta: {
+          keepalive: true
+        },
+        component: () => import(/* webpackChunkName: "match" */ '../views/match/index.vue'),
       },
       {
         path: '/gift',
@@ -40,12 +47,26 @@ const routes = [
         },
         component: () => import(/* webpackChunkName: "gift" */ '../views/gift/index.vue')
       },{
-        path: '/match',
-        name: 'Match',
+        path: '/competition',
+        name: 'Competition',
         meta: {
           keepalive: true
         },
-        component: () => import(/* webpackChunkName: "match" */ '../views/match/index.vue')
+        component: () => import(/* webpackChunkName: "match" */ '../views/competition/index.vue'),
+      },{
+        path: '/rankInfo',
+        name: 'RankInfo',
+        meta: {
+          keepalive: true
+        },
+        component: () => import(/* webpackChunkName: "match" */ '../views/competition/rankInfo.vue'),
+      },{
+        path: '/leagueMatch',
+        name: 'LeagueMatch',
+        meta: {
+          keepalive: true
+        },
+        component: () => import(/* webpackChunkName: "match" */ '../views/leagueMatch/index.vue'),
       },{
         path: '/shop',
         name: 'Shop',

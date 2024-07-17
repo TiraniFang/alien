@@ -50,7 +50,7 @@
                   <img src="../assets/logo.jpg" alt="" />
                 </div>
                 <div>
-                  <h5>外星人用户</h5>
+                  <h5>玩家{{ wid }}</h5>
                   <!-- <p style="margin-bottom: 5px">
                     <el-tooltip
                       class="box-item"
@@ -111,10 +111,40 @@
         </div>
       </template>
     </el-dialog>
+
+    <!-- <div class="redbag" v-if="show">
+      <div class="layouts"></div>
+      <img src="../assets/rebbag2.png" alt="">
+      <el-button type="primary" @click="rewardVisible = true"> 领取 </el-button>
+    </div> -->
+    <el-dialog
+      v-model="rewardVisible"
+      title="奖励领取提示"
+      width="500"
+      center
+      :show-close="false"
+      :close-on-click-modal="false"
+    >
+      <div class="text-center">
+        <img
+          style="max-width: 50%; display: inline-block; margin-top: 30px"
+          src="../assets/ewm.png"
+          alt=""
+        />
+        <p style="margin-top: 20px; margin-bottom: 20px">
+          您的奖励已发放至小程序，微信扫一扫查看奖励详情
+        </p>
+      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button type="primary" @click="toRankLog"> 查看奖励发放记录 </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 <script setup>
-import { ref, watch, onMounted, onBeforeUnmount, onBeforeMount } from "vue";
+import { ref, watch, onMounted, onBeforeUnmount, onUnmounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { ElMessage, ElMessageBox } from "element-plus";
 import Cookies from "js-cookie";
@@ -129,8 +159,11 @@ const dialogGameVisible = ref(false);
 const message = ref("");
 const dialogVisible = ref(false);
 const currentIndex = ref(0);
-const myIntergral = ref(localStorage.getItem("myIntergral"));
+const myIntergral = ref(Number(localStorage.getItem("myIntergral")));
+const wid = ref(localStorage.getItem("wid"));
+const statusReward = ref(0);
 const showAddInter = ref(false);
+const rewardVisible = ref(false);
 const info = ref(null);
 const sign = ref("");
 const sign2 = ref("");
@@ -155,12 +188,18 @@ const menus = ref([
     icon: require("../assets/chuangguan.png"),
     activeIcon: require("../assets/chuangguan-on.png"),
   },
-  // {
-  //   text: "比赛",
-  //   path: "/competition",
-  //   icon: require("../assets/match-icon.png"),
-  //   activeIcon: require("../assets/match-on.png"),
-  // },
+  {
+    text: "比赛",
+    path: "/competition",
+    icon: require("../assets/rankSai.png"),
+    activeIcon: require("../assets/rankSai-on.png"),
+  },
+  {
+    text: "网吧联赛",
+    path: "/leagueMatch",
+    icon: require("../assets/match-icon.png"),
+    activeIcon: require("../assets/match-on.png"),
+  },
   {
     text: "赚积分",
     path: "/gift",
@@ -176,7 +215,15 @@ const menus = ref([
 ]);
 const router = useRouter();
 const route = useRoute();
-
+watch(
+  route,
+  (newValue, oldValue) => {
+    if (newValue.path == "/match") {
+      getIntegral();
+    }
+  },
+  { deep: true }
+);
 onMounted(async () => {
   isCurrentPath(route.path);
   getIntegral();
@@ -204,16 +251,15 @@ const checkLoginStatus = () => {
           ((Number(localStorage.getItem("timeCount")) / 60 / 60) * 100).toFixed(2)
         );
       } else {
-        console.log(Number(localStorage.getItem("timeCount")) % 3600);
         percentage.value = Number(
           (((Number(localStorage.getItem("timeCount")) % 3600) / 60 / 60) * 100).toFixed(
             2
           )
         );
       }
-
-      if (res.data.result.number != 0) {
-        getIntegral();
+      getIntegral();
+      if (res.data.result.NewRewardMessage == 1) {
+        rewardVisible.value = true;
       }
     });
 };
@@ -221,9 +267,9 @@ const checkLoginStatus = () => {
 // 一分钟检测一次登录状态
 timer3.value = setInterval(() => {
   checkLoginStatus();
+  emits("childEvent");
 }, 60000);
 checkLoginStatus();
-
 window.addEventListener("storage", (event) => {
   if (event.key === "myIntergral") {
     myIntergral.value = event.newValue;
@@ -232,6 +278,10 @@ window.addEventListener("storage", (event) => {
   }
 });
 
+const toRankLog = () => {
+  rewardVisible.value = false;
+  router.push("/user#rank");
+};
 onBeforeUnmount(() => {
   clearInterval(timer3.value);
   timer3.value = null;
@@ -251,14 +301,26 @@ const isCurrentPath = (path) => {
       break;
     case "/match":
       currentIndex.value = 1;
+      getIntegral();
       break;
-    case "/gift":
+    case "/competition":
       currentIndex.value = 2;
       break;
-    case "/shop":
+    case "/rankInfo":
+      currentIndex.value = 2;
+      break;
+    case "/leagueMatch":
       currentIndex.value = 3;
       break;
+    case "/gift":
+      currentIndex.value = 4;
+      break;
+    case "/shop":
+      currentIndex.value = 5;
+      break;
     default:
+      rewardVisible.value = false;
+
       currentIndex.value = -1;
   }
 };
@@ -317,8 +379,8 @@ const handleMatchData = async function (str, callback) {
       })
       .then((res) => {
         if (res.data.code == 10000) {
-          getIntegral();
           emits("childEvent");
+          getIntegral();
           callback("true");
         } else {
           callback(res.data.message);
@@ -357,7 +419,8 @@ const getIntegral = () => {
         localStorage.setItem("myIntergral", res.data.result.number);
         localStorage.setItem("matchCount", res.data.result.match_count);
         localStorage.setItem("matchLevel", res.data.result.match_level);
-        myIntergral.value = res.data.result.number;
+        localStorage.setItem("wid", res.data.result.wid);
+        myIntergral.value = Number(res.data.result.number);
       } else {
         ElMessage.error("未登录吗？");
       }
@@ -380,6 +443,10 @@ const toQuit = () => {
         });
         localStorage.clear();
         router.replace("/login");
+        let i = setTimeout(() => {
+          window.location.reload();
+          clearTimeout(i);
+        }, 1000);
       }
     });
 };
@@ -400,6 +467,7 @@ const toQuit = () => {
 }
 .menu {
   position: relative;
+  margin-right: 60px;
   .ewm {
     background: rgba(0, 0, 0, 0.4);
     padding: 30px;
@@ -455,8 +523,7 @@ const toQuit = () => {
   }
 }
 .slogon {
-  width: 269px;
-  height: 29px;
+  width: 150px;
 }
 .personal-center {
   color: #fff;

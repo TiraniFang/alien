@@ -74,7 +74,6 @@ import Header from "@/components/header.vue";
 import { ElMessage } from "element-plus";
 import { QuestionFilled } from "@element-plus/icons-vue";
 const myIntergral = ref(localStorage.getItem("myIntergral"));
-
 const showGiftDialog = ref(false);
 const showRuleDialog = ref(false);
 const taskList = ref([
@@ -146,6 +145,11 @@ const currentGift = ref({});
 const timeCount = ref(null);
 const timer2 = ref(null);
 const lastReward = ref({});
+window.addEventListener("storage", (event) => {
+  if (event.key === "myIntergral") {
+    myIntergral.value = event.newValue;
+  }
+});
 onMounted(() => {
   // 计算当天剩余时间（毫秒）并赋值给remainingTime
   calculateRemainingTime();
@@ -174,7 +178,6 @@ const getTaskList = () => {
       method: "GET_QUEST_DATA_NEW",
     })
     .then((res) => {
-      console.log(res);
       taskList.value = res.data.result;
     });
 };
