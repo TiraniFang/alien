@@ -12,6 +12,20 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+@font-face {
+  font-family: 'iconfont';  /* Project id 4552882 */
+  src: url('//at.alicdn.com/t/c/font_4552882_n1x5qxay0vl.woff2?t=1721182905248') format('woff2'),
+       url('//at.alicdn.com/t/c/font_4552882_n1x5qxay0vl.woff?t=1721182905248') format('woff'),
+       url('//at.alicdn.com/t/c/font_4552882_n1x5qxay0vl.ttf?t=1721182905248') format('truetype');
+}
+.iconfont {
+  font-family:"iconfont" !important;
+}
+.icon-qizi {
+  font-size: 16px;
+  content: '&#xe609;';
+  
+}
 
 a {
   font-weight: 500;

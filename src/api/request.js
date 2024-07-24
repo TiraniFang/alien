@@ -36,6 +36,12 @@ service.interceptors.response.use(
       router.replace('/login')
       return
 
+    } else if(res.data.code == 40000 ) {
+      ElMessage.error({
+        message: res.data.message
+      })
+      localStorage.clear()
+      router.replace('/login')
     } else {
       if (res.data.code == '10009' && res.data.message != '游戏帐号未登陆') {
         ElMessage.error({

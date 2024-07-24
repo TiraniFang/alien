@@ -1,5 +1,5 @@
 <template>
-  <div v-drag class="login">
+  <div class="login">
     <video
       loop
       autoplay
@@ -213,18 +213,18 @@ const minimizeWindow = (str) => {
 
 // 一：客户端信息获取
 const getClientInfo = () => {
-  localStorage.setItem("netbarId", info.value.id);
+  localStorage.setItem("netbarId", 23);
   api
     .post("/method/client/", {
       method: "GET_CLIENT_INFO",
-      // id: 23,
-      // name: "kamisama",
-      // mac: "08-97-98-96-50-A0",
-      // sign: "f0214886c1c4604f6d96c0c9719de233",
-      id: info.value.id,
-      name: info.value.name,
-      mac: info.value.mac,
-      sign: info.value.sign,
+      id: 23,
+      name: "kamisama",
+      mac: "08-97-98-96-50-A0",
+      sign: "f0214886c1c4604f6d96c0c9719de233",
+      // id: info.value.id,
+      // name: info.value.name,
+      // mac: info.value.mac,
+      // sign: info.value.sign,
     })
     .then((res) => {
       console.log(res);
@@ -322,17 +322,13 @@ const getIntegral = () => {
 };
 onBeforeUnmount(() => {
   clearInterval(timer.value);
-  // clearTimeout(timer2.value);
   timer.value = null;
-  // timer2.value = null;
 });
-// getMyNetInfo()
-// gameLogout();
 
 const confirm = () => {
   isConfirm.value = true;
-  // getClientInfo();
-  callJavaMethod();
+  getClientInfo();
+  // callJavaMethod();
 };
 getClientVersion();
 </script>

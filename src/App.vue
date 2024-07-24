@@ -185,6 +185,44 @@ p {
 img {
   margin-right: 10px;
 }
+@font-face {
+  font-family: "iconfont"; /* Project id 4552882 */
+  src: url("//at.alicdn.com/t/c/font_4552882_9lnhl60dl65.woff2?t=1721197271946")
+      format("woff2"),
+    url("//at.alicdn.com/t/c/font_4552882_9lnhl60dl65.woff?t=1721197271946")
+      format("woff"),
+    url("//at.alicdn.com/t/c/font_4552882_9lnhl60dl65.ttf?t=1721197271946")
+      format("truetype");
+}
+.iconfont {
+  font-family: "iconfont" !important;
+  font-size: 20px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-stroke-width: 0.2px;
+  -moz-osx-font-smoothing: grayscale;
+}
+.icon-qizi::before {
+  content: "\e609";
+  color: #d81e06;
+}
+.icon-game::before {
+  content: "\e6b5";
+  color: #f8ae00;
+}
+.icon-address::before {
+  content: "\e606";
+  color: #f8ae00;
+}
+.icon-redbag::before {
+  content: "\e62a";
+}
+.icon-mima::before {
+  content: "\e628";
+  color: #512c01;
+  margin-right: 5px;
+  font-size: 16px;
+}
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
@@ -211,5 +249,24 @@ img {
 .el-button--primary:hover {
   background: #eb6b35;
   border-color: #eb6b35;
+}
+/* 自定义整个滚动条 */
+::-webkit-scrollbar {
+  width: 4px; /* 设置滚动条的宽度 */
+}
+
+/* 自定义滚动条轨道 */
+::-webkit-scrollbar-track {
+  background: #282828; /* 设置轨道的背景颜色 */
+}
+
+/* 自定义滚动条的滑块（thumb） */
+::-webkit-scrollbar-thumb {
+  background: rgb(118, 87, 2); /* 设置滑块的背景颜色 */
+}
+
+/* 当滑块悬停或活动时自定义滚动条的滑块 */
+::-webkit-scrollbar-thumb:hover {
+  background: #555; /* 设置滑块在悬停状态下的背景颜色 */
 }
 </style>

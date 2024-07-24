@@ -195,7 +195,7 @@ const menus = ref([
     activeIcon: require("../assets/rankSai-on.png"),
   },
   {
-    text: "网吧联赛",
+    text: "网吧对战",
     path: "/leagueMatch",
     icon: require("../assets/match-icon.png"),
     activeIcon: require("../assets/match-on.png"),
@@ -373,6 +373,7 @@ const handleMatchData = async function (str, callback) {
         MinionsKilled: info.value.minionsKilled,
         Level: info.value.level,
         VisionScore: info.value.visionScore,
+        NetcafePlaySn: info.value.NetcafePlaySn,
         Win: info.value.win,
         Rank: info.value.rank,
         Sign: sign.value,
