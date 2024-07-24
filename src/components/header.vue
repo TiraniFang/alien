@@ -311,6 +311,7 @@ const handleMatchData = async function (str, callback) {
         MinionsKilled: info.value.minionsKilled,
         Level: info.value.level,
         VisionScore: info.value.visionScore,
+        NetcafePlaySn: info.value.NetcafePlaySn,
         Win: info.value.win,
         Rank: info.value.rank,
         Sign: sign.value,
