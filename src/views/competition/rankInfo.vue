@@ -1,5 +1,5 @@
 <template>
-  <Header v-drag :intergral="myIntergral" />
+  <Header v-drag :intergral="myIntergral" @childEvent="getRankList" />
   <div v-drag class="competition">
     <div class="container">
       <div class="type flex space-center align-center">
@@ -19,7 +19,15 @@
               <div class="flex align-center">
                 <span>{{ jndex + 1 }}</span>
                 <div class="avatar">
-                  <div class="img"></div>
+                  <div class="img">
+                    <el-image
+                      :src="
+                        jtem.headimgurl == ''
+                          ? require('../../assets/logo.jpg')
+                          : jtem.headimgurl
+                      "
+                    ></el-image>
+                  </div>
                   <img v-if="jndex == 0" src="../../assets/one.png" alt="" />
                   <img
                     v-if="jndex == 1 || jndex == 2"
@@ -33,7 +41,7 @@
                   />
                 </div>
                 <div class="info">
-                  <h4>{{ jtem.wid }}</h4>
+                  <h4>{{ jtem.nickname || jtem.wid }}</h4>
                   <p>
                     {{ index == 0 ? "时长" : index == 1 ? "积分" : "完成数" }}：{{
                       index == 0 ? convertSecondsToHMS(jtem.number) : jtem.number
@@ -63,7 +71,9 @@
               <div class="flex align-center">
                 <span>{{ item.self.RankNumber || "-" }}</span>
                 <div class="avatar">
-                  <div class="img"></div>
+                  <div class="img">
+                    <el-image :src="currentAvatar"></el-image>
+                  </div>
                   <img
                     v-if="item.self.RankNumber == 0"
                     src="../../assets/one.png"
@@ -85,8 +95,8 @@
                   />
                 </div>
                 <div class="info">
-                  <h4>{{ item.self.wid || wid }}</h4>
-                  <p>
+                  <h4>{{ nickname }}</h4>
+                  <p v-if="item.self != '{}'">
                     {{ index == 0 ? "时长" : index == 1 ? "积分" : "完成数" }}：{{
                       index == 0
                         ? convertSecondsToHMS(item.self.number)
@@ -132,12 +142,17 @@ import Header from "@/components/header.vue";
 import api from "../../api/request";
 import { RefreshLeft } from "@element-plus/icons-vue";
 
+const nickname = ref(localStorage.getItem("nickName"));
 const myIntergral = ref(localStorage.getItem("myIntergral"));
 const router = useRouter();
 const route = useRoute();
 const type = ref("");
 const wid = ref(localStorage.getItem("wid"));
-
+const currentAvatar = ref(
+  localStorage.getItem("avatar") == ""
+    ? require("../../assets/logo.jpg")
+    : localStorage.getItem("avatar")
+);
 type.value = route.query.type;
 const typeTitle = ref(
   type.value == "week"
@@ -168,6 +183,9 @@ window.addEventListener("storage", (event) => {
 });
 // 获取日赛类型
 const getRankList = () => {
+  nickname.value = localStorage.getItem("nickName");
+  currentAvatar.value = localStorage.getItem("avatar");
+
   let method = "";
   let number = "";
   rankList.value = [];
@@ -197,6 +215,7 @@ const getRankList = () => {
     })
     .then((res) => {
       let result = res.data.result;
+      rankList.value = [];
       for (let i in result) {
         rankList.value.push(result[i]);
       }
@@ -412,14 +431,13 @@ getRankList();
       .img {
         width: 50px;
         height: 50px;
-        background: url("../../assets/logo.jpg") no-repeat center;
-        background-size: contain;
         position: absolute;
         left: 46%;
         border-radius: 50%;
         top: 50%;
         transform: translate(-50%, -50%);
         z-index: 1;
+        overflow: hidden;
       }
       img {
         display: inline-block;

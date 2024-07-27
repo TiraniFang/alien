@@ -1,6 +1,6 @@
 <template>
-  <Header @childEvent="switchTab(currentIndex)" :intergral="myIntergral" />
-  <div class="user">
+  <Header v-drag @childEvent="switchTab(currentIndex)" :intergral="myIntergral" />
+  <div v-drag class="user">
     <div class="container">
       <div class="flex space-between box">
         <div class="left">

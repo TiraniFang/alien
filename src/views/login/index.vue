@@ -1,5 +1,5 @@
 <template>
-  <div class="login">
+  <div class="login" v-drag>
     <video
       loop
       autoplay
@@ -42,7 +42,10 @@
         :autoplay="swiper_options.autoplay"
       >
         <swiper-slide>
-          <img class="bg" src="../../assets/match_bj3.jpg" alt="" />
+          <img class="bg" src="../../assets/reward.jpg" alt="" />
+        </swiper-slide>
+        <swiper-slide>
+          <img class="bg" src="../../assets/reward2.jpg" alt="" />
         </swiper-slide>
         <swiper-slide style="background: url(../../assets/match_bj.jpg) no-repeat">
           <img class="bg" src="../../assets/match_bj.jpg" alt="" />
@@ -213,18 +216,18 @@ const minimizeWindow = (str) => {
 
 // 一：客户端信息获取
 const getClientInfo = () => {
-  localStorage.setItem("netbarId", 23);
+  localStorage.setItem("netbarId", info.value.id);
   api
     .post("/method/client/", {
       method: "GET_CLIENT_INFO",
-      id: 23,
-      name: "kamisama",
-      mac: "08-97-98-96-50-A0",
-      sign: "f0214886c1c4604f6d96c0c9719de233",
-      // id: info.value.id,
-      // name: info.value.name,
-      // mac: info.value.mac,
-      // sign: info.value.sign,
+      // id: 23,
+      // name: "kamisama",
+      // mac: "08-97-98-96-50-A0",
+      // sign: "f0214886c1c4604f6d96c0c9719de233",
+      id: info.value.id,
+      name: info.value.name,
+      mac: info.value.mac,
+      sign: info.value.sign,
     })
     .then((res) => {
       console.log(res);
@@ -281,6 +284,14 @@ const checkLoginStatus = (n) => {
         localStorage.setItem("loginStatus", true);
         localStorage.setItem("fistLogin", true);
         localStorage.setItem("timeCount", 0);
+        if (res.data.result.nickname != "") {
+          localStorage.setItem("nickName", res.data.result.nickname);
+          localStorage.setItem("avatar", res.data.result.headimgurl);
+        } else {
+          localStorage.setItem("nickName", res.data.result.wid);
+          localStorage.setItem("avatar", "");
+        }
+
         let timer = setTimeout(() => {
           router.replace("/home");
           clearTimeout(timer);
@@ -327,8 +338,8 @@ onBeforeUnmount(() => {
 
 const confirm = () => {
   isConfirm.value = true;
-  getClientInfo();
-  // callJavaMethod();
+  // getClientInfo();
+  callJavaMethod();
 };
 getClientVersion();
 </script>

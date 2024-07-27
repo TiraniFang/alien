@@ -47,10 +47,37 @@
                     :stroke-width="10"
                   ></el-progress>
                   <p class="inter" :class="{ show: showAddInter }"><span>+10</span></p>
-                  <img src="../assets/logo.jpg" alt="" />
+                  <img :src="currentAvatar" alt="" />
                 </div>
                 <div>
-                  <h5>玩家{{ wid }}</h5>
+                  <div class="flex align-center">
+                    <h5>{{ nickName }}</h5>
+                    <EditPen
+                      @click="dialogUpdateInfo = true"
+                      style="
+                        width: 15px;
+                        margin-left: 10px;
+                        margin-top: -5px;
+                        cursor: pointer;
+                      "
+                    />
+                  </div>
+                  <!-- <div class="flex align-center" v-if="showIpt" style="width: 120px">
+                    <el-input
+                      v-model="nickName"
+                      maxlength="8"
+                      @blur="confirmNickName"
+                    ></el-input>
+                    <FolderChecked
+                      @click="confirmNickName"
+                      style="
+                        width: 20px;
+                        margin-left: 10px;
+                        margin-top: -5px;
+                        cursor: pointer;
+                      "
+                    />
+                  </div> -->
                   <!-- <p style="margin-bottom: 5px">
                     <el-tooltip
                       class="box-item"
@@ -141,17 +168,50 @@
         </div>
       </template>
     </el-dialog>
+    <el-dialog v-model="dialogUpdateInfo" title="修改个人资料" width="1200">
+      <el-form :model="form" label-width="auto" style="max-width: 100%">
+        <el-form-item label="昵称">
+          <el-input v-model="form.nickname" maxlength="8" />
+        </el-form-item>
+        <el-form-item label="头像">
+          <el-image
+            style="width: 100px; border: 1px solid rgb(228, 228, 228); border-radius: 4px"
+            :src="form.avatar"
+          ></el-image>
+        </el-form-item>
+        <el-form-item label="请选择">
+          <div class="flex imgFlex flex-wrap">
+            <el-image
+              v-for="item in 30"
+              :key="item"
+              @click="chooseAvatar(item)"
+              :src="'http://cs.itytl.com/img/head/' + item + '.jpg'"
+            ></el-image>
+          </div>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="dialogUpdateInfo = false">取消 </el-button>
+          <el-button type="primary" @click="updateInfo"> 确定 </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 <script setup>
 import { ref, watch, onMounted, onBeforeUnmount, onUnmounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { EditPen, FolderChecked } from "@element-plus/icons-vue";
+
 import Cookies from "js-cookie";
 import CryptoJS from "crypto-js";
 
 import api from "../api/request";
-
+const dialogUpdateInfo = ref(false);
+const showIpt = ref(false);
+const nickName = ref(localStorage.getItem("nickName"));
 const props = defineProps(["intergral"]);
 const emits = defineEmits(["childEvent"]);
 const percentage = ref(0);
@@ -169,6 +229,19 @@ const sign = ref("");
 const sign2 = ref("");
 const netBarName = ref(localStorage.getItem("netBarName"));
 const timer3 = ref(null);
+const avatar = ref("");
+const currentAvatar = ref(
+  localStorage.getItem("avatar") == ""
+    ? require("../assets/logo.jpg")
+    : localStorage.getItem("avatar")
+);
+const form = ref({
+  nickname: localStorage.getItem("nickName"),
+  avatar:
+    localStorage.getItem("avatar") == ""
+      ? require("../assets/logo.jpg")
+      : localStorage.getItem("avatar"),
+});
 const localCount = ref(localStorage.getItem("timeCount"));
 const cookie = document.cookie.replace(
   /(?:(?:^|.*;\s*)LOL_MATCH_SERVER\s*\=\s*([^;]*).*$)|^.*$/,
@@ -236,6 +309,57 @@ onMounted(async () => {
     console.log("Java bridge not found");
   }
 });
+const blurNickName = () => {
+  showIpt.value = false;
+  nickName.value = localStorage.getItem("nickName");
+};
+// 修改头像
+const chooseAvatar = (item) => {
+  avatar.value = item;
+  form.value.avatar = "http://cs.itytl.com/img/head/" + item + ".jpg";
+};
+// 修改昵称
+const updateInfo = () => {
+  if (nickName.value.length > 8) {
+    ElMessage.warning("最多输入8个字");
+    return false;
+  }
+  if (nickName.value == "") {
+    ElMessage.warning("请输入昵称");
+    return false;
+  }
+  api
+    .post("/method/account/", {
+      method: "CHANGE_NICKNAME",
+      nickname: form.value.nickname,
+    })
+    .then((res) => {
+      if (res.data.code == 10000) {
+        nickName.value = form.value.nickname;
+        localStorage.setItem("nickName", nickName.value);
+        emits("childEvent");
+
+        dialogUpdateInfo.value = false;
+      }
+    });
+  if (avatar.value != "") {
+    api
+      .post("/method/account/", {
+        method: "CHANGE_HEADIMG",
+        name: avatar.value,
+      })
+      .then((res) => {
+        if (res.data.code == 10000) {
+          localStorage.setItem("avatar", form.value.avatar);
+          currentAvatar.value =
+            "http://bs.itytl.com/images/head/" + avatar.value + ".jpg";
+          emits("childEvent");
+
+          dialogUpdateInfo.value = false;
+        }
+      });
+  }
+};
 
 // 查询登录状态时间
 
@@ -652,5 +776,18 @@ const toQuit = () => {
 :deep(.el-progress-circle) {
   width: 58px !important;
   height: 58px !important;
+}
+:deep(.el-input__wrapper) {
+  background: none;
+  line-height: 16px;
+  height: 24px;
+  margin-bottom: 3px;
+}
+:deep(.el-input__inner) {
+  color: #fff;
+}
+.imgFlex .el-image {
+  width: 100px;
+  margin: 5px;
 }
 </style>
