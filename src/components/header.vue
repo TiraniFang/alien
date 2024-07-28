@@ -171,7 +171,7 @@
     <el-dialog v-model="dialogUpdateInfo" title="修改个人资料" width="1200">
       <el-form :model="form" label-width="auto" style="max-width: 100%">
         <el-form-item label="昵称">
-          <el-input v-model="form.nickname" maxlength="8" />
+          <el-input v-model="form.nickname" maxlength="6" />
         </el-form-item>
         <el-form-item label="头像">
           <el-image
@@ -320,11 +320,11 @@ const chooseAvatar = (item) => {
 };
 // 修改昵称
 const updateInfo = () => {
-  if (nickName.value.length > 8) {
-    ElMessage.warning("最多输入8个字");
+  if (form.value.nickname.length > 6) {
+    ElMessage.warning("最多输入6个字");
     return false;
   }
-  if (nickName.value == "") {
+  if (form.value.nickname == "") {
     ElMessage.warning("请输入昵称");
     return false;
   }

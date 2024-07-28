@@ -164,9 +164,9 @@ const typeTitle = ref(
     : "日赛排行"
 );
 const tips = ref(type.value == "week" ? "本周" : type.value == "month" ? "本月" : "当天");
-const titleList = ref(["在线时长排行", "积分排行", "游戏完成度排行"]);
+const titleList = ref(["游戏时长排行", "积分排行", "游戏完成度排行"]);
 const titleTips = ref([
-  `统计${tips.value}在线时长`,
+  `统计${tips.value}游戏在线时长`,
   `统计${tips.value}获得积分`,
   `统计${tips.value}完成度`,
 ]);
