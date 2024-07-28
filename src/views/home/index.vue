@@ -1,6 +1,6 @@
 <template>
   <!-- @childEvent="getTaskList" -->
-  <Header v-drag :intergral="myIntergral" @childEvent="refreshData" />
+  <Header :intergral="myIntergral" @childEvent="refreshData" />
   <div v-drag class="home">
     <div class="layout"></div>
     <div class="container">
