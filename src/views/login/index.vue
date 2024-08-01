@@ -1,5 +1,5 @@
 <template>
-  <div class="login">
+  <div class="login" v-drag>
     <video
       loop
       autoplay
@@ -105,13 +105,21 @@
         </div>
       </template>
     </el-dialog>
+    <el-dialog v-model="dialogCzVisible" title="提示" width="500">
+      <span>网吧积分消耗完毕，请联系店长充值！</span>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button type="primary" @click="dialogCzVisible = false"> 关闭 </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 <script setup>
 import { ref, onBeforeUnmount, onMounted, reactive } from "vue";
 import axios from "axios";
 import api from "../../api/request";
-import { ElMessage } from "element-plus";
+import { ElMessage , ElMessageBox} from "element-plus";
 import { useRouter } from "vue-router";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import "swiper/swiper.min.css";
@@ -127,6 +135,7 @@ const loginEwm = ref("");
 const timer = ref(null);
 const info = ref(null);
 const info2 = ref(null);
+const dialogCzVisible = ref(false)
 const banner1 = ref(require("../../assets/match_bj.jpg"));
 // const timer2 = ref(null);
 const maxNumber = ref([603, 604, 605, 606, 607, 608, 609]);
@@ -216,24 +225,26 @@ const minimizeWindow = (str) => {
 
 // 一：客户端信息获取
 const getClientInfo = () => {
-  localStorage.setItem("netbarId", 23);
+  localStorage.setItem("netbarId", info.value.id);
   api
     .post("/method/client/", {
       method: "GET_CLIENT_INFO",
-      id: 23,
-      name: "kamisama",
-      mac: "08-97-98-96-50-A0",
-      sign: "f0214886c1c4604f6d96c0c9719de233",
-      // id: info.value.id,
-      // name: info.value.name,
-      // mac: info.value.mac,
-      // sign: info.value.sign,
+      // id: 23,
+      // name: "kamisama",
+      // mac: "08-97-98-96-50-A0",
+      // sign: "f0214886c1c4604f6d96c0c9719de233",
+      id: info.value.id,
+      name: info.value.name,
+      mac: info.value.mac,
+      sign: info.value.sign,
     })
     .then((res) => {
       console.log(res);
       // getStatus()
       if (res.data.code == 10000) {
         getStatus();
+      } else if (res.data.code = 40000) {
+        dialogCzVisible.value = true
       }
     });
 };
@@ -338,8 +349,8 @@ onBeforeUnmount(() => {
 
 const confirm = () => {
   isConfirm.value = true;
-  getClientInfo();
-  // callJavaMethod();
+  // getClientInfo();
+  callJavaMethod();
 };
 getClientVersion();
 </script>
@@ -712,5 +723,8 @@ getClientVersion();
     top: -126px;
     opacity: 1;
   }
+}
+:deep(.el-message-box) {
+  background-color: #222!important;
 }
 </style>

@@ -1,6 +1,6 @@
 <template>
   <!-- @childEvent="getTaskList" -->
-  <Header :intergral="myIntergral" @childEvent="refreshData" />
+  <Header v-drag :intergral="myIntergral" @childEvent="refreshData" />
   <div v-drag class="home">
     <div class="layout"></div>
     <div class="container">
@@ -218,7 +218,7 @@ import Header from "@/components/header.vue";
 import { QuestionFilled } from "@element-plus/icons-vue";
 import GiftDialog from "../gift/components/gift-dialog.vue";
 import Rules from "./components/rules.vue";
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox  } from "element-plus";
 import api from "../../api/request";
 import { useRouter } from "vue-router";
 import { Swiper, SwiperSlide } from "swiper/vue";
